@@ -77,15 +77,17 @@
       font-weight: 700;
       margin-bottom: 16px;
     }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
     .small {
       font-size: 14px;
       color: #6b7280;
     }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 14px;
+    .muted {
+      color: #6b7280;
     }
     label {
       display: block;
@@ -93,17 +95,21 @@
       font-weight: 600;
       margin-bottom: 6px;
     }
-    input, select, button {
+    input, select, textarea, button {
       font: inherit;
     }
-    input, select {
+    input, select, textarea {
       width: 100%;
       border: 1px solid #cbd5e1;
       border-radius: 12px;
       padding: 10px 12px;
       background: #fff;
     }
-    input:disabled, select:disabled {
+    textarea {
+      min-height: 84px;
+      resize: vertical;
+    }
+    input:disabled, select:disabled, textarea:disabled {
       background: #f8fafc;
       color: #94a3b8;
       cursor: not-allowed;
@@ -144,42 +150,113 @@
       gap: 10px;
       flex-wrap: wrap;
     }
+
+    .player-panel {
+      display: grid;
+      gap: 18px;
+    }
+    .form-card {
+      border: 1px solid #dbe3ef;
+      border-radius: 18px;
+      padding: 16px;
+      background: #f8fbff;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .form-grid-note {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .list-toolbar {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+      align-items: end;
+    }
+
     .player-list, .team-members, .constraint-list {
       display: grid;
       gap: 12px;
     }
+
     .player-item, .member-item {
       display: flex;
-      align-items: center;
+      align-items: stretch;
       justify-content: space-between;
-      gap: 12px;
+      gap: 14px;
       border: 1px solid #dbe3ef;
       border-radius: 16px;
       padding: 14px;
       background: #fff;
     }
     .player-item.assigned {
-      background: #f1f5f9;
-      opacity: 0.7;
+      background: #f8fafc;
+      border-color: #d7e3f8;
+    }
+    .player-item.draggable {
+      cursor: grab;
+    }
+    .player-item.draggable:active {
+      cursor: grabbing;
     }
     .player-main {
       min-width: 0;
+      flex: 1;
+    }
+    .player-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
     }
     .player-name {
+      font-weight: 800;
+      font-size: 18px;
+    }
+    .job-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
       font-weight: 700;
-      margin-bottom: 4px;
     }
     .meta {
       font-size: 14px;
       color: #6b7280;
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
+      margin-bottom: 8px;
     }
+    .note-box {
+      font-size: 14px;
+      color: #475569;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
     .actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+      align-items: center;
       justify-content: flex-end;
     }
     .tag {
@@ -192,9 +269,15 @@
       color: #1d4ed8;
       font-weight: 700;
     }
+    .drag-hint {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px dashed #cbd5e1;
+    }
+
     .team-head {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 12px;
@@ -219,7 +302,9 @@
       color: #6b7280;
       text-align: center;
       padding: 12px;
+      line-height: 1.8;
     }
+
     .constraint-row {
       display: grid;
       grid-template-columns: 1fr 100px 80px;
@@ -260,7 +345,7 @@
       display: flex;
     }
     .modal {
-      width: min(420px, 100%);
+      width: min(460px, 100%);
       background: #fff;
       border: 1px solid #dbe3ef;
       border-radius: 20px;
@@ -277,6 +362,10 @@
       font-size: 14px;
       line-height: 1.6;
       margin-bottom: 14px;
+    }
+    .modal-grid {
+      display: grid;
+      gap: 12px;
     }
     .modal-error {
       margin-top: 10px;
@@ -300,7 +389,8 @@
     }
     @media (max-width: 720px) {
       .wrap { padding: 16px; }
-      .form-grid { grid-template-columns: 1fr 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .list-toolbar { grid-template-columns: 1fr; }
       .constraint-row { grid-template-columns: 1fr 90px 64px; }
       .player-item, .member-item {
         flex-direction: column;
@@ -323,6 +413,7 @@
       <div class="inline-actions">
         <button class="btn-outline" id="copyLinkBtn">複製分享連結</button>
         <button class="btn-outline" id="backCreateBtn">建立新房間</button>
+        <button class="btn-outline" id="cloneRoomBtn">保留人物另開房間</button>
         <button class="btn-secondary" id="unlockBtn">進入編輯模式</button>
         <button class="btn-secondary" id="lockBtn" style="display:none;">鎖定</button>
       </div>
@@ -331,29 +422,51 @@
     <div class="layout">
       <div class="card">
         <div class="card-title">人物資料庫</div>
-        <div class="form-grid">
-          <div>
-            <label for="name">名稱</label>
-            <input id="name" type="text" placeholder="例如：彬的黑騎" />
+
+        <div class="player-panel">
+          <div class="form-card">
+            <div class="section-title">新增人物</div>
+
+            <div class="form-grid">
+              <div>
+                <label for="name">名稱</label>
+                <input id="name" type="text" placeholder="例如：彬的黑騎" />
+              </div>
+              <div>
+                <label for="level">等級</label>
+                <input id="level" type="number" placeholder="200" />
+              </div>
+              <div>
+                <label for="job">職業</label>
+                <select id="job"></select>
+              </div>
+            </div>
+
+            <div class="form-grid-note">
+              <div>
+                <label for="note">備註（非必填）</label>
+                <textarea id="note" placeholder="可填寫裝備、分工、角色補充資訊"></textarea>
+              </div>
+            </div>
+
+            <div class="inline-actions">
+              <button class="btn-primary" id="savePlayerBtn">新增人物</button>
+              <button class="btn-secondary" id="cancelEditBtn" style="display:none;">取消編輯</button>
+            </div>
           </div>
+
           <div>
-            <label for="level">等級</label>
-            <input id="level" type="number" placeholder="200" />
-          </div>
-          <div>
-            <label for="job">職業</label>
-            <select id="job"></select>
-          </div>
-          <div>
-            <label for="power">表功</label>
-            <input id="power" type="number" placeholder="2500000" />
+            <div class="list-toolbar">
+              <div>
+                <label for="jobFilter">篩選職業</label>
+                <select id="jobFilter"></select>
+              </div>
+              <div class="small muted" style="align-self:end;">人物請直接拖拉到右側隊伍，不再提供快捷加入按鈕。</div>
+            </div>
+
+            <div class="player-list" id="playerList"></div>
           </div>
         </div>
-        <div class="inline-actions" style="margin-bottom:16px;">
-          <button class="btn-primary" id="savePlayerBtn">新增人物</button>
-          <button class="btn-secondary" id="cancelEditBtn" style="display:none;">取消編輯</button>
-        </div>
-        <div class="player-list" id="playerList"></div>
       </div>
 
       <div class="right-col">
@@ -364,6 +477,7 @@
 
     <div class="info-box">
       第一次從分享連結打開時，預設為唯讀。<br>
+      人物可直接拖拉到右側隊伍。<br>
       隊伍中的人物可雙擊快速編輯。<br>
       如果你是房主，請妥善保管編輯密碼。
     </div>
@@ -382,12 +496,45 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="cloneRoomModal">
+    <div class="modal">
+      <div class="modal-title">保留人物資料庫另開新房間</div>
+      <div class="modal-desc">
+        會複製目前的人物資料庫。<br>
+        新房間的隊伍會清空，限制會回到預設。
+      </div>
+
+      <div class="modal-grid">
+        <div>
+          <label for="cloneTitle">房間名稱</label>
+          <input id="cloneTitle" type="text" placeholder="請輸入新房間名稱" />
+        </div>
+        <div>
+          <label for="cloneSlug">Slug</label>
+          <input id="cloneSlug" type="text" placeholder="例如：new-room-001" />
+        </div>
+        <div>
+          <label for="clonePassword">編輯密碼</label>
+          <input id="clonePassword" type="password" placeholder="請輸入新房間密碼" />
+        </div>
+      </div>
+
+      <div class="modal-error" id="cloneModalError">建立失敗</div>
+
+      <div class="modal-actions">
+        <button class="btn-outline" id="cloneCancelBtn">取消</button>
+        <button class="btn-primary" id="cloneConfirmBtn">建立新房間</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
     import {
       getFirestore,
       doc,
       getDoc,
+      setDoc,
       updateDoc,
       serverTimestamp,
       onSnapshot
@@ -412,13 +559,19 @@
       "英雄", "聖騎士", "冰雷", "火毒", "槍神", "拳霸", "其他"
     ];
 
+    const DEFAULT_CONSTRAINTS = {
+      A: [{ id: uid(), job: "黑騎士", min: 1 }],
+      B: []
+    };
+
     const state = {
       roomId: "",
       data: null,
       draggingPlayerId: null,
       editingPlayerId: null,
       isEditable: false,
-      unsubscribe: null
+      unsubscribe: null,
+      jobFilter: "全部"
     };
 
     const els = {
@@ -427,13 +580,15 @@
       roomIdText: document.getElementById("roomIdText"),
       copyLinkBtn: document.getElementById("copyLinkBtn"),
       backCreateBtn: document.getElementById("backCreateBtn"),
+      cloneRoomBtn: document.getElementById("cloneRoomBtn"),
       unlockBtn: document.getElementById("unlockBtn"),
       lockBtn: document.getElementById("lockBtn"),
 
       name: document.getElementById("name"),
       level: document.getElementById("level"),
       job: document.getElementById("job"),
-      power: document.getElementById("power"),
+      note: document.getElementById("note"),
+      jobFilter: document.getElementById("jobFilter"),
       savePlayerBtn: document.getElementById("savePlayerBtn"),
       cancelEditBtn: document.getElementById("cancelEditBtn"),
       playerList: document.getElementById("playerList"),
@@ -444,7 +599,15 @@
       modalPasswordInput: document.getElementById("modalPasswordInput"),
       modalError: document.getElementById("modalError"),
       modalCancelBtn: document.getElementById("modalCancelBtn"),
-      modalConfirmBtn: document.getElementById("modalConfirmBtn")
+      modalConfirmBtn: document.getElementById("modalConfirmBtn"),
+
+      cloneRoomModal: document.getElementById("cloneRoomModal"),
+      cloneTitle: document.getElementById("cloneTitle"),
+      cloneSlug: document.getElementById("cloneSlug"),
+      clonePassword: document.getElementById("clonePassword"),
+      cloneModalError: document.getElementById("cloneModalError"),
+      cloneCancelBtn: document.getElementById("cloneCancelBtn"),
+      cloneConfirmBtn: document.getElementById("cloneConfirmBtn")
     };
 
     bootstrap().catch((err) => {
@@ -461,11 +624,25 @@
     }
 
     function initJobOptions() {
+      els.job.innerHTML = "";
       JOB_OPTIONS.forEach(job => {
         const option = document.createElement("option");
         option.value = job;
         option.textContent = job;
         els.job.appendChild(option);
+      });
+
+      els.jobFilter.innerHTML = "";
+      const allOption = document.createElement("option");
+      allOption.value = "全部";
+      allOption.textContent = "全部職業";
+      els.jobFilter.appendChild(allOption);
+
+      JOB_OPTIONS.forEach(job => {
+        const option = document.createElement("option");
+        option.value = job;
+        option.textContent = job;
+        els.jobFilter.appendChild(option);
       });
     }
 
@@ -474,10 +651,15 @@
       els.backCreateBtn.addEventListener("click", () => {
         window.location.href = `${BASE}/team-tool/`;
       });
+      els.cloneRoomBtn.addEventListener("click", openCloneRoomModal);
       els.unlockBtn.addEventListener("click", openPasswordModal);
       els.lockBtn.addEventListener("click", lockEditing);
       els.savePlayerBtn.addEventListener("click", savePlayer);
       els.cancelEditBtn.addEventListener("click", cancelEdit);
+      els.jobFilter.addEventListener("change", () => {
+        state.jobFilter = els.jobFilter.value;
+        renderPlayers();
+      });
 
       els.modalCancelBtn.addEventListener("click", closePasswordModal);
       els.modalConfirmBtn.addEventListener("click", verifyPasswordFromModal);
@@ -486,6 +668,15 @@
       });
       els.modalPasswordInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") verifyPasswordFromModal();
+      });
+
+      els.cloneCancelBtn.addEventListener("click", closeCloneRoomModal);
+      els.cloneConfirmBtn.addEventListener("click", createClonedRoom);
+      els.cloneRoomModal.addEventListener("click", (e) => {
+        if (e.target === els.cloneRoomModal) closeCloneRoomModal();
+      });
+      els.clonePassword.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") createClonedRoom();
       });
     }
 
@@ -525,17 +716,27 @@
       return {
         title: raw.title || "組隊小工具",
         slug: raw.slug || state.roomId,
-        players: Array.isArray(raw.players) ? raw.players : [],
+        players: Array.isArray(raw.players)
+          ? raw.players.map(player => ({
+              id: player.id || uid(),
+              name: player.name || "",
+              level: Number(player.level || 0),
+              job: player.job || "其他",
+              note: player.note || ""
+            }))
+          : [],
         teams: {
           A: {
             members: Array.isArray(raw?.teams?.A?.members) ? raw.teams.A.members : [],
             constraints: Array.isArray(raw?.teams?.A?.constraints)
               ? raw.teams.A.constraints
-              : [{ id: uid(), job: "黑騎士", min: 1 }]
+              : structuredClone(DEFAULT_CONSTRAINTS.A)
           },
           B: {
             members: Array.isArray(raw?.teams?.B?.members) ? raw.teams.B.members : [],
-            constraints: Array.isArray(raw?.teams?.B?.constraints) ? raw.teams.B.constraints : []
+            constraints: Array.isArray(raw?.teams?.B?.constraints)
+              ? raw.teams.B.constraints
+              : structuredClone(DEFAULT_CONSTRAINTS.B)
           }
         },
         passwordHash: raw.passwordHash || "",
@@ -544,8 +745,8 @@
       };
     }
 
-    function getRoomRef() {
-      return doc(db, "horntailRooms", state.roomId);
+    function getRoomRef(id = state.roomId) {
+      return doc(db, "horntailRooms", id);
     }
 
     async function patchRoom(patch) {
@@ -572,9 +773,10 @@
       els.name.disabled = disabled;
       els.level.disabled = disabled;
       els.job.disabled = disabled;
-      els.power.disabled = disabled;
+      els.note.disabled = disabled;
       els.savePlayerBtn.disabled = disabled;
       els.cancelEditBtn.disabled = disabled;
+      els.cloneRoomBtn.disabled = disabled;
     }
 
     function getShareUrl() {
@@ -635,6 +837,7 @@
       state.isEditable = false;
       resetForm();
       closePasswordModal();
+      closeCloneRoomModal();
       updateModeUI();
       renderAll();
     }
@@ -661,7 +864,7 @@
       state.editingPlayerId = null;
       els.name.value = "";
       els.level.value = "";
-      els.power.value = "";
+      els.note.value = "";
       els.job.value = JOB_OPTIONS[0];
       els.savePlayerBtn.textContent = "新增人物";
       els.cancelEditBtn.style.display = "none";
@@ -680,7 +883,7 @@
       els.name.value = player.name;
       els.level.value = player.level;
       els.job.value = player.job;
-      els.power.value = player.power;
+      els.note.value = player.note || "";
       els.savePlayerBtn.textContent = "儲存修改";
       els.cancelEditBtn.style.display = "inline-block";
       els.name.focus();
@@ -693,11 +896,11 @@
       const name = els.name.value.trim();
       const level = Number(els.level.value);
       const job = els.job.value;
-      const power = Number(els.power.value);
+      const note = els.note.value.trim();
 
       if (!name) return alert("請輸入人物名稱");
       if (!level || level < 1) return alert("請輸入正確等級");
-      if (!power || power < 0) return alert("請輸入正確表功");
+      if (!job) return alert("請選擇職業");
 
       const players = [...state.data.players];
 
@@ -707,9 +910,9 @@
         target.name = name;
         target.level = level;
         target.job = job;
-        target.power = power;
+        target.note = note;
       } else {
-        players.push({ id: uid(), name, level, job, power });
+        players.push({ id: uid(), name, level, job, note });
       }
 
       await patchRoom({ players });
@@ -782,7 +985,9 @@
 
     function getTeamStats(teamKey) {
       const members = state.data.teams[teamKey].members.map(getPlayer).filter(Boolean);
-      const totalPower = members.reduce((sum, p) => sum + p.power, 0);
+      const avgLevel = members.length
+        ? Math.round(members.reduce((sum, p) => sum + Number(p.level || 0), 0) / members.length)
+        : 0;
 
       const jobCount = {};
       members.forEach(member => {
@@ -793,7 +998,7 @@
         return (jobCount[rule.job] || 0) < Number(rule.min || 0);
       });
 
-      return { members, totalPower, failed };
+      return { members, avgLevel, failed };
     }
 
     function renderAll() {
@@ -806,21 +1011,23 @@
 
     function renderPlayers() {
       els.playerList.innerHTML = "";
-      const players = state.data.players;
+      const players = state.data.players.filter(player => {
+        return state.jobFilter === "全部" ? true : player.job === state.jobFilter;
+      });
 
       if (!players.length) {
-        els.playerList.innerHTML = '<div class="card small">還沒有人物資料，先新增幾筆試試看。</div>';
+        els.playerList.innerHTML = '<div class="card small">目前沒有符合篩選條件的人物資料。</div>';
         return;
       }
 
       players.forEach(player => {
         const assigned = getAssignedTeam(player.id);
         const item = document.createElement("div");
-        item.className = "player-item" + (assigned ? " assigned" : "");
-        item.draggable = state.isEditable && !assigned;
+        item.className = "player-item" + (assigned ? " assigned" : "") + (state.isEditable ? " draggable" : "");
+        item.draggable = state.isEditable;
 
         item.addEventListener("dragstart", () => {
-          if (state.isEditable && !assigned) state.draggingPlayerId = player.id;
+          if (state.isEditable) state.draggingPlayerId = player.id;
         });
         item.addEventListener("dragend", () => {
           state.draggingPlayerId = null;
@@ -828,24 +1035,27 @@
 
         item.innerHTML = `
           <div class="player-main">
-            <div class="player-name">${escapeHtml(player.name)}</div>
+            <div class="player-top">
+              <div class="player-name">${escapeHtml(player.name)}</div>
+              <span class="job-badge">${escapeHtml(player.job)}</span>
+              <span class="tag">${assigned ? "已編入 " + assigned + " 隊" : "可拖拉加入隊伍"}</span>
+            </div>
+
             <div class="meta">
               <span>Lv.${player.level}</span>
-              <span>${escapeHtml(player.job)}</span>
-              <span>表功 ${player.power.toLocaleString()}</span>
             </div>
+
+            ${player.note
+              ? `<div class="note-box">${escapeHtml(player.note)}</div>`
+              : `<div class="small muted">尚未填寫備註</div>`}
           </div>
+
           <div class="actions">
-            <span class="tag">${assigned ? "已編入 " + assigned + " 隊" : "可拖拉 / 可加入"}</span>
-            <button class="btn-secondary" data-add-team="A" ${(!state.isEditable || assigned) ? "disabled" : ""}>加入A</button>
-            <button class="btn-secondary" data-add-team="B" ${(!state.isEditable || assigned) ? "disabled" : ""}>加入B</button>
             <button class="btn-secondary" data-edit ${!state.isEditable ? "disabled" : ""}>修改</button>
             <button class="btn-danger" data-delete ${!state.isEditable ? "disabled" : ""}>刪除</button>
           </div>
         `;
 
-        item.querySelector('[data-add-team="A"]').addEventListener("click", () => moveToTeam(player.id, "A"));
-        item.querySelector('[data-add-team="B"]').addEventListener("click", () => moveToTeam(player.id, "B"));
         item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
         item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
 
@@ -854,21 +1064,21 @@
     }
 
     function renderTeam(teamKey, root) {
-      const { members, totalPower, failed } = getTeamStats(teamKey);
+      const { members, avgLevel, failed } = getTeamStats(teamKey);
       const isEditable = state.isEditable;
 
       root.innerHTML = `
         <div class="team-head">
           <div>
             <div class="card-title" style="margin-bottom:6px;">${teamKey} 隊伍</div>
-            <div class="small">總表功：${totalPower.toLocaleString()}</div>
+            <div class="small">平均等級：${avgLevel}</div>
           </div>
           <span class="tag">${members.length}/6 人</span>
         </div>
 
         <div class="team-drop" id="drop-${teamKey}">
           ${members.length === 0
-            ? '<div class="empty">把人物拖拉到這裡，或從左側直接按加入按鈕</div>'
+            ? '<div class="empty">把左側人物拖拉到這裡<br>即可加入隊伍</div>'
             : '<div class="team-members"></div>'}
         </div>
 
@@ -922,12 +1132,16 @@
 
           row.innerHTML = `
             <div class="player-main">
-              <div class="player-name">${escapeHtml(member.name)}</div>
+              <div class="player-top">
+                <div class="player-name">${escapeHtml(member.name)}</div>
+                <span class="job-badge">${escapeHtml(member.job)}</span>
+              </div>
               <div class="meta">
                 <span>Lv.${member.level}</span>
-                <span>${escapeHtml(member.job)}</span>
-                <span>表功 ${member.power.toLocaleString()}</span>
               </div>
+              ${member.note
+                ? `<div class="note-box">${escapeHtml(member.note)}</div>`
+                : `<div class="small muted">尚未填寫備註</div>`}
             </div>
             <div class="actions">
               <button class="btn-secondary" data-edit-team ${!isEditable ? "disabled" : ""}>修改</button>
@@ -997,8 +1211,96 @@
       }
     }
 
-    function uid() {
-      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    function openCloneRoomModal() {
+      if (!requireEditable()) return;
+
+      els.cloneTitle.value = `${state.data.title || "組隊小工具"} - 副本`;
+      els.cloneSlug.value = "";
+      els.clonePassword.value = "";
+      els.cloneModalError.classList.remove("show");
+      els.cloneModalError.textContent = "建立失敗";
+      els.cloneRoomModal.classList.add("show");
+      setTimeout(() => els.cloneTitle.focus(), 30);
+    }
+
+    function closeCloneRoomModal() {
+      els.cloneRoomModal.classList.remove("show");
+      els.cloneModalError.classList.remove("show");
+    }
+
+    async function createClonedRoom() {
+      if (!requireEditable()) return;
+
+      const title = els.cloneTitle.value.trim();
+      const slug = els.cloneSlug.value.trim();
+      const password = els.clonePassword.value.trim();
+
+      if (!title) {
+        showCloneError("請輸入房間名稱");
+        return;
+      }
+      if (!slug) {
+        showCloneError("請輸入 slug");
+        return;
+      }
+      if (!password) {
+        showCloneError("請輸入密碼");
+        return;
+      }
+
+      const safeSlug = slug.toLowerCase().replace(/[^a-z0-9-_]/g, "-");
+
+      if (!safeSlug) {
+        showCloneError("slug 格式不正確，請使用英數、- 或 _");
+        return;
+      }
+
+      const newRoomRef = getRoomRef(safeSlug);
+      const existing = await getDoc(newRoomRef);
+
+      if (existing.exists()) {
+        showCloneError("此 slug 已存在，請更換");
+        return;
+      }
+
+      const passwordHash = await sha256(password);
+
+      const clonedPlayers = state.data.players.map(player => ({
+        id: uid(),
+        name: player.name,
+        level: player.level,
+        job: player.job,
+        note: player.note || ""
+      }));
+
+      await setDoc(newRoomRef, {
+        title,
+        slug: safeSlug,
+        players: clonedPlayers,
+        teams: {
+          A: {
+            members: [],
+            constraints: [{ id: uid(), job: "黑騎士", min: 1 }]
+          },
+          B: {
+            members: [],
+            constraints: []
+          }
+        },
+        passwordHash,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      closeCloneRoomModal();
+      const nextUrl = `${window.location.origin}${BASE}/room/?id=${encodeURIComponent(safeSlug)}`;
+      window.open(nextUrl, "_blank");
+      alert("已建立新房間，並在新分頁開啟。");
+    }
+
+    function showCloneError(message) {
+      els.cloneModalError.textContent = message;
+      els.cloneModalError.classList.add("show");
     }
 
     async function sha256(text) {
@@ -1007,6 +1309,10 @@
       const hashBuffer = await crypto.subtle.digest("SHA-256", data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function uid() {
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
     }
 
     function escapeHtml(str) {
