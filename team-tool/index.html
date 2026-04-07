@@ -2,80 +2,262 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>建立房間｜組隊小工具</title>
   <style>
+    * { box-sizing: border-box; }
     body {
-      font-family: Arial;
-      background: #f3f4f6;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+      background: #f3f6fb;
+      color: #1f2937;
     }
-    .box {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      width: 320px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    .wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      width: 100%;
+      max-width: 760px;
+      background: #fff;
+      border: 1px solid #dbe3ef;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      padding: 28px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+    .sub {
+      color: #6b7280;
+      margin-bottom: 24px;
+      line-height: 1.7;
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
     }
     input {
       width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      background: #fff;
     }
     button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 10px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 6px;
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font: inherit;
       cursor: pointer;
+      transition: 0.15s ease;
+    }
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+      font-weight: 700;
+    }
+    .status {
+      margin-top: 16px;
+      font-size: 14px;
+      color: #2563eb;
+      font-weight: 700;
+      min-height: 22px;
+    }
+    .info {
+      margin-top: 18px;
+      background: #f8fafc;
+      border: 1px solid #dbe3ef;
+      border-radius: 14px;
+      padding: 14px 16px;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .hint {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 6px;
+      line-height: 1.6;
+    }
+    code {
+      background: #eef2ff;
+      padding: 2px 6px;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="card">
+      <h1>組隊小工具</h1>
+      <div class="sub">
+        先建立房間名稱、網址代號與編輯密碼。
+      </div>
 
-<div class="box">
-  <h2>建立房間</h2>
-  <input id="slug" placeholder="房間網址 (例如 abc123)" />
-  <button onclick="createRoom()">建立</button>
-</div>
+      <div class="grid">
+        <div>
+          <label for="roomName">房間名稱</label>
+          <input id="roomName" type="text" placeholder="例如：今晚龍王一團" />
+        </div>
 
-<script type="module">
-  const BASE = "/team-builder";
+        <div>
+          <label for="slug">網址代號 slug</label>
+          <input id="slug" type="text" placeholder="例如：ht-team-1" />
+          <div class="hint">
+            只能使用英文字母、數字、底線 <code>_</code>、連字號 <code>-</code><br>
+            這一版建立後網址會是：<code>/team-builder/room/?id=你的slug</code>
+          </div>
+        </div>
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+        <div>
+          <label for="password">編輯密碼</label>
+          <input id="password" type="password" placeholder="請輸入編輯密碼" />
+        </div>
 
-  const firebaseConfig = {
-    apiKey: "你的APIKEY",
-    authDomain: "你的.firebaseapp.com",
-    projectId: "你的ID"
-  };
+        <div>
+          <label for="confirmPassword">確認密碼</label>
+          <input id="confirmPassword" type="password" placeholder="請再輸入一次密碼" />
+        </div>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+        <button id="createBtn" class="btn-primary">建立房間</button>
+      </div>
 
-  window.createRoom = async function () {
-    const slug = document.getElementById("slug").value.trim();
+      <div id="status" class="status"></div>
 
-    if (!slug) {
-      alert("請輸入房間網址");
-      return;
+      <div class="info">
+        建立後會產生專屬房間。<br>
+        有連結的人都可以看；要修改內容，必須輸入你設定的密碼。<br>
+        slug 會直接作為房間 ID 使用，所以不能重複。
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+    const BASE = "/team-builder";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAol1EZ7XzMrw2esIdc4exXVTqDwTJRetM",
+      authDomain: "team-tool-3f53e.firebaseapp.com",
+      projectId: "team-tool-3f53e",
+      storageBucket: "team-tool-3f53e.firebasestorage.app",
+      messagingSenderId: "680266181834",
+      appId: "1:680266181834:web:a6509a1daa50e22319d833"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const roomNameEl = document.getElementById("roomName");
+    const slugEl = document.getElementById("slug");
+    const passwordEl = document.getElementById("password");
+    const confirmPasswordEl = document.getElementById("confirmPassword");
+    const createBtn = document.getElementById("createBtn");
+    const statusEl = document.getElementById("status");
+
+    createBtn.addEventListener("click", createRoom);
+
+    function normalizeSlug(value) {
+      return value
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9_-]/g, "");
     }
 
-    await setDoc(doc(db, "rooms", slug), {
-      created: new Date().toISOString()
-    });
+    async function sha256(text) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
 
-    window.location.href = `${BASE}/room/?id=${slug}`;
-  };
-</script>
+    function uid() {
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
 
+    async function createRoom() {
+      const title = roomNameEl.value.trim();
+      const slug = normalizeSlug(slugEl.value);
+      const password = passwordEl.value.trim();
+      const confirmPassword = confirmPasswordEl.value.trim();
+
+      if (!title) return alert("請輸入房間名稱");
+      if (!slug) return alert("請輸入網址代號");
+      if (!/^[a-z0-9_-]+$/.test(slug)) return alert("網址代號格式錯誤");
+      if (slug.includes("/")) return alert("slug 不可以包含 /");
+      if (["index", "team-tool", "room", "index.html"].includes(slug)) {
+        return alert("這個 slug 不能使用");
+      }
+      if (!password) return alert("請輸入密碼");
+      if (password.length < 4) return alert("密碼至少 4 碼");
+      if (password !== confirmPassword) return alert("密碼不一致");
+
+      createBtn.disabled = true;
+      statusEl.textContent = "建立中...";
+
+      try {
+        const ref = doc(db, "horntailRooms", slug);
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+          alert("這個 slug 已被使用");
+          return;
+        }
+
+        const passwordHash = await sha256(password);
+
+        await setDoc(ref, {
+          title,
+          slug,
+          players: [],
+          teams: {
+            A: { members: [], constraints: [{ id: uid(), job: "黑騎士", min: 1 }] },
+            B: { members: [], constraints: [] }
+          },
+          passwordHash,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        statusEl.textContent = "完成！";
+        window.location.href = `${BASE}/room/?id=${encodeURIComponent(slug)}`;
+      } catch (e) {
+        console.error(e);
+        alert("建立失敗，請先確認 Firestore 已啟用，且規則允許讀寫。");
+      } finally {
+        createBtn.disabled = false;
+      }
+    }
+  </script>
 </body>
 </html>
