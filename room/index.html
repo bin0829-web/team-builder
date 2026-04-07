@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>組隊小工具｜房間</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -486,7 +489,9 @@
     }
 
     .modal {
-      width: min(460px, 100%);
+      width: min(960px, 100%);
+      max-height: calc(100vh - 40px);
+      overflow: auto;
       background: rgba(255,255,255,0.96);
       border: 1px solid #dbe3ef;
       border-radius: 20px;
@@ -495,6 +500,10 @@
         inset 0 1px 0 rgba(255,255,255,0.95);
       padding: 22px;
       backdrop-filter: blur(10px);
+    }
+
+    .modal.modal-sm {
+      width: min(460px, 100%);
     }
 
     .modal-title {
@@ -532,6 +541,109 @@
       gap: 10px;
       margin-top: 16px;
       flex-wrap: wrap;
+    }
+
+    .wizard-toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .wizard-status {
+      font-size: 14px;
+      color: #475569;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .wizard-preview {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .wizard-table-wrap {
+      border: 1px solid #dbe3ef;
+      border-radius: 16px;
+      overflow: auto;
+      background: #fff;
+    }
+
+    .wizard-table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    .wizard-table th,
+    .wizard-table td {
+      border-bottom: 1px solid #e5edf7;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .wizard-table th {
+      background: #f8fbff;
+      font-size: 14px;
+      color: #475569;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .wizard-table td input,
+    .wizard-table td select {
+      min-width: 120px;
+    }
+
+    .wizard-table td textarea {
+      min-width: 180px;
+      min-height: 46px;
+    }
+
+    .wizard-raw {
+      display: grid;
+      gap: 8px;
+    }
+
+    .wizard-raw-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      color: #475569;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      max-height: 180px;
+      overflow: auto;
+    }
+
+    .wizard-summary {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
     }
 
     @media (max-width: 1280px) {
@@ -573,6 +685,10 @@
       .member-item {
         min-height: auto;
       }
+
+      .wizard-table {
+        min-width: 680px;
+      }
     }
   </style>
 </head>
@@ -590,6 +706,7 @@
         <button class="btn-outline" id="copyLinkBtn">複製分享連結</button>
         <button class="btn-outline" id="backCreateBtn">建立新房間</button>
         <button class="btn-outline" id="cloneRoomBtn">保留人物另開房間</button>
+        <button class="btn-outline" id="importWizardBtn">從公會截圖匯入</button>
         <button class="btn-secondary" id="unlockBtn">進入編輯模式</button>
         <button class="btn-secondary" id="lockBtn" style="display:none;">鎖定</button>
       </div>
@@ -655,12 +772,14 @@
       第一次從分享連結打開時，預設為唯讀。<br>
       人物可直接拖拉到右側隊伍。<br>
       隊伍中的人物可雙擊快速編輯。<br>
+      公會截圖匯入會先自動辨識，再讓你手動確認後匯入。<br>
       如果你是房主，請妥善保管編輯密碼。
     </div>
   </div>
 
+  <!-- 編輯密碼 -->
   <div class="modal-backdrop" id="passwordModal">
-    <div class="modal">
+    <div class="modal modal-sm">
       <div class="modal-title">輸入編輯密碼</div>
       <div class="modal-desc">驗證成功後，才能新增、修改、刪除、拖拉與變更限制。</div>
       <input id="modalPasswordInput" type="password" placeholder="請輸入編輯密碼" />
@@ -672,8 +791,9 @@
     </div>
   </div>
 
+  <!-- 保留人物另開新房間 -->
   <div class="modal-backdrop" id="cloneRoomModal">
-    <div class="modal">
+    <div class="modal modal-sm">
       <div class="modal-title">保留人物資料庫另開新房間</div>
       <div class="modal-desc">
         會複製目前的人物資料庫。<br>
@@ -700,6 +820,62 @@
       <div class="modal-actions">
         <button class="btn-outline" id="cloneCancelBtn">取消</button>
         <button class="btn-primary" id="cloneConfirmBtn">建立新房間</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 公會截圖匯入精靈 -->
+  <div class="modal-backdrop" id="importWizardModal">
+    <div class="modal">
+      <div class="modal-title">從公會截圖匯入</div>
+      <div class="modal-desc">
+        上傳 1 張或多張公會成員截圖，系統會先自動辨識，再顯示預覽表格供你手動修正後匯入。<br>
+        被遊戲截斷為「...」的名字可能仍需手動調整。
+      </div>
+
+      <div class="wizard-toolbar">
+        <input id="importImageInput" type="file" accept="image/*" multiple />
+        <button class="btn-primary" id="startOcrBtn">開始辨識</button>
+        <button class="btn-secondary" id="addImportRowBtn">手動新增一列</button>
+      </div>
+
+      <div class="wizard-status" id="ocrStatus">
+        尚未開始。請先選擇截圖，再按「開始辨識」。
+      </div>
+
+      <div class="wizard-summary">
+        <span class="pill">辨識後可直接修改表格</span>
+        <span class="pill">職業與等級會自動嘗試解析</span>
+        <span class="pill">匯入後會直接加入人物資料庫</span>
+      </div>
+
+      <div class="wizard-preview">
+        <div class="wizard-table-wrap">
+          <table class="wizard-table">
+            <thead>
+              <tr>
+                <th style="width: 180px;">名稱</th>
+                <th style="width: 220px;">職業</th>
+                <th style="width: 90px;">等級</th>
+                <th>備註</th>
+                <th style="width: 90px;">刪除</th>
+              </tr>
+            </thead>
+            <tbody id="importPreviewBody"></tbody>
+          </table>
+        </div>
+
+        <div>
+          <div class="section-title" style="font-size:16px;">OCR 原始文字（供你對照）</div>
+          <div class="wizard-raw" id="ocrRawList"></div>
+        </div>
+      </div>
+
+      <div class="modal-error" id="importModalError">匯入失敗</div>
+
+      <div class="modal-actions">
+        <button class="btn-outline" id="importCancelBtn">取消</button>
+        <button class="btn-primary" id="importConfirmBtn">匯入人物資料庫</button>
       </div>
     </div>
   </div>
@@ -731,8 +907,35 @@
     const db = getFirestore(app);
 
     const JOB_OPTIONS = [
-      "黑騎士", "主教", "箭神", "神射手", "夜使者", "暗影神偷",
-      "英雄", "聖騎士", "冰雷", "火毒", "槍神", "拳霸", "其他"
+      "黑騎士",
+      "主教",
+      "英雄",
+      "聖騎士",
+      "大魔導士(冰、雷)",
+      "大魔導士(火、毒)",
+      "夜使者",
+      "暗影神偷",
+      "箭神",
+      "神射手",
+      "槍神",
+      "拳霸",
+      "其他"
+    ];
+
+    const JOB_ALIASES = [
+      { canonical: "黑騎士", aliases: ["黑騎士", "黑骑士"] },
+      { canonical: "主教", aliases: ["主教"] },
+      { canonical: "英雄", aliases: ["英雄"] },
+      { canonical: "聖騎士", aliases: ["聖騎士", "圣骑士"] },
+      { canonical: "大魔導士(冰、雷)", aliases: ["大魔導士(冰、雷)", "大魔導士(冰雷)", "大魔導士冰雷", "冰雷", "冰、雷", "大魔导师(冰、雷)", "大魔導士(冰,雷)", "大魔导士(冰、雷)"] },
+      { canonical: "大魔導士(火、毒)", aliases: ["大魔導士(火、毒)", "大魔導士(火毒)", "大魔導士火毒", "火毒", "火、毒", "大魔导师(火、毒)", "大魔導士(火,毒)", "大魔导士(火、毒)"] },
+      { canonical: "夜使者", aliases: ["夜使者"] },
+      { canonical: "暗影神偷", aliases: ["暗影神偷"] },
+      { canonical: "箭神", aliases: ["箭神"] },
+      { canonical: "神射手", aliases: ["神射手"] },
+      { canonical: "槍神", aliases: ["槍神"] },
+      { canonical: "拳霸", aliases: ["拳霸"] },
+      { canonical: "其他", aliases: ["其他"] }
     ];
 
     function uid() {
@@ -751,7 +954,11 @@
       editingPlayerId: null,
       isEditable: false,
       unsubscribe: null,
-      jobFilter: "全部"
+      jobFilter: "全部",
+      importRows: [],
+      importRawTexts: [],
+      importFiles: [],
+      isOcrRunning: false
     };
 
     const els = {
@@ -761,6 +968,7 @@
       copyLinkBtn: document.getElementById("copyLinkBtn"),
       backCreateBtn: document.getElementById("backCreateBtn"),
       cloneRoomBtn: document.getElementById("cloneRoomBtn"),
+      importWizardBtn: document.getElementById("importWizardBtn"),
       unlockBtn: document.getElementById("unlockBtn"),
       lockBtn: document.getElementById("lockBtn"),
 
@@ -787,7 +995,18 @@
       clonePassword: document.getElementById("clonePassword"),
       cloneModalError: document.getElementById("cloneModalError"),
       cloneCancelBtn: document.getElementById("cloneCancelBtn"),
-      cloneConfirmBtn: document.getElementById("cloneConfirmBtn")
+      cloneConfirmBtn: document.getElementById("cloneConfirmBtn"),
+
+      importWizardModal: document.getElementById("importWizardModal"),
+      importImageInput: document.getElementById("importImageInput"),
+      startOcrBtn: document.getElementById("startOcrBtn"),
+      addImportRowBtn: document.getElementById("addImportRowBtn"),
+      ocrStatus: document.getElementById("ocrStatus"),
+      importPreviewBody: document.getElementById("importPreviewBody"),
+      ocrRawList: document.getElementById("ocrRawList"),
+      importModalError: document.getElementById("importModalError"),
+      importCancelBtn: document.getElementById("importCancelBtn"),
+      importConfirmBtn: document.getElementById("importConfirmBtn")
     };
 
     bootstrap().catch((err) => {
@@ -832,6 +1051,7 @@
         window.location.href = `${BASE}/team-tool/`;
       });
       els.cloneRoomBtn.addEventListener("click", openCloneRoomModal);
+      els.importWizardBtn.addEventListener("click", openImportWizardModal);
       els.unlockBtn.addEventListener("click", openPasswordModal);
       els.lockBtn.addEventListener("click", lockEditing);
       els.savePlayerBtn.addEventListener("click", savePlayer);
@@ -857,6 +1077,23 @@
       });
       els.clonePassword.addEventListener("keydown", (e) => {
         if (e.key === "Enter") createClonedRoom();
+      });
+
+      els.importCancelBtn.addEventListener("click", closeImportWizardModal);
+      els.startOcrBtn.addEventListener("click", startGuildScreenshotOCR);
+      els.addImportRowBtn.addEventListener("click", () => {
+        state.importRows.push({ id: uid(), name: "", job: "其他", level: "", note: "" });
+        renderImportPreviewTable();
+      });
+      els.importConfirmBtn.addEventListener("click", importRowsToDatabase);
+      els.importWizardModal.addEventListener("click", (e) => {
+        if (e.target === els.importWizardModal) closeImportWizardModal();
+      });
+      els.importImageInput.addEventListener("change", () => {
+        state.importFiles = Array.from(els.importImageInput.files || []);
+        setOcrStatus(state.importFiles.length
+          ? `已選擇 ${state.importFiles.length} 張圖片，請按「開始辨識」。`
+          : "尚未開始。請先選擇截圖，再按「開始辨識」。");
       });
     }
 
@@ -892,6 +1129,18 @@
       });
     }
 
+    function normalizeJob(job) {
+      const value = (job || "").trim();
+      if (!value) return "其他";
+
+      for (const item of JOB_ALIASES) {
+        if (item.canonical === value) return item.canonical;
+        if (item.aliases.some(alias => alias === value)) return item.canonical;
+      }
+
+      return JOB_OPTIONS.includes(value) ? value : "其他";
+    }
+
     function normalizeData(raw) {
       return {
         title: raw.title || "組隊小工具",
@@ -901,7 +1150,7 @@
               id: player.id || uid(),
               name: player.name || "",
               level: Number(player.level || 0),
-              job: player.job || "其他",
+              job: normalizeJob(player.job),
               note: player.note || ""
             }))
           : [],
@@ -909,13 +1158,13 @@
           A: {
             members: Array.isArray(raw?.teams?.A?.members) ? raw.teams.A.members : [],
             constraints: Array.isArray(raw?.teams?.A?.constraints)
-              ? raw.teams.A.constraints
+              ? raw.teams.A.constraints.map(rule => ({ ...rule, job: normalizeJob(rule.job) }))
               : structuredClone(DEFAULT_CONSTRAINTS.A)
           },
           B: {
             members: Array.isArray(raw?.teams?.B?.members) ? raw.teams.B.members : [],
             constraints: Array.isArray(raw?.teams?.B?.constraints)
-              ? raw.teams.B.constraints
+              ? raw.teams.B.constraints.map(rule => ({ ...rule, job: normalizeJob(rule.job) }))
               : structuredClone(DEFAULT_CONSTRAINTS.B)
           }
         },
@@ -957,6 +1206,7 @@
       els.savePlayerBtn.disabled = disabled;
       els.cancelEditBtn.disabled = disabled;
       els.cloneRoomBtn.disabled = disabled;
+      els.importWizardBtn.disabled = disabled;
     }
 
     function getShareUrl() {
@@ -1008,9 +1258,8 @@
       }
 
       state.isEditable = true;
-      updateModeUI();
-      renderAll();
       closePasswordModal();
+      renderAll();
       alert("已進入編輯模式");
     }
 
@@ -1019,7 +1268,7 @@
       resetForm();
       closePasswordModal();
       closeCloneRoomModal();
-      updateModeUI();
+      closeImportWizardModal();
       renderAll();
     }
 
@@ -1063,7 +1312,7 @@
       state.editingPlayerId = playerId;
       els.name.value = player.name;
       els.level.value = player.level;
-      els.job.value = player.job;
+      els.job.value = normalizeJob(player.job);
       els.note.value = player.note || "";
       els.savePlayerBtn.textContent = "儲存修改";
       els.cancelEditBtn.style.display = "inline-block";
@@ -1076,7 +1325,7 @@
 
       const name = els.name.value.trim();
       const level = Number(els.level.value);
-      const job = els.job.value;
+      const job = normalizeJob(els.job.value);
       const note = els.note.value.trim();
 
       if (!name) return alert("請輸入人物名稱");
@@ -1152,6 +1401,7 @@
       const teams = structuredClone(state.data.teams);
       const target = teams[teamKey].constraints.find(c => c.id === constraintId);
       if (!target) return;
+      if (field === "job") value = normalizeJob(value);
       target[field] = value;
       await patchRoom({ teams });
     }
@@ -1172,11 +1422,12 @@
 
       const jobCount = {};
       members.forEach(member => {
-        jobCount[member.job] = (jobCount[member.job] || 0) + 1;
+        const job = normalizeJob(member.job);
+        jobCount[job] = (jobCount[job] || 0) + 1;
       });
 
       const failed = state.data.teams[teamKey].constraints.filter(rule => {
-        return (jobCount[rule.job] || 0) < Number(rule.min || 0);
+        return (jobCount[normalizeJob(rule.job)] || 0) < Number(rule.min || 0);
       });
 
       return { members, avgLevel, failed };
@@ -1193,7 +1444,7 @@
     function renderPlayers() {
       els.playerList.innerHTML = "";
       const players = state.data.players.filter(player => {
-        return state.jobFilter === "全部" ? true : player.job === state.jobFilter;
+        return state.jobFilter === "全部" ? true : normalizeJob(player.job) === state.jobFilter;
       });
 
       if (!players.length) {
@@ -1219,7 +1470,7 @@
           <div class="player-main">
             <div class="player-top">
               <div class="player-name">${escapeHtml(player.name)}</div>
-              <span class="job-badge">${escapeHtml(player.job)}</span>
+              <span class="job-badge">${escapeHtml(normalizeJob(player.job))}</span>
               <span class="tag">${assigned ? "已編入 " + assigned + " 隊" : "可拖拉加入隊伍"}</span>
             </div>
 
@@ -1320,7 +1571,7 @@
             <div class="player-main">
               <div class="player-top">
                 <div class="player-name">${escapeHtml(member.name)}</div>
-                <span class="job-badge">${escapeHtml(member.job)}</span>
+                <span class="job-badge">${escapeHtml(normalizeJob(member.job))}</span>
               </div>
 
               <div class="meta">
@@ -1362,7 +1613,7 @@
             const option = document.createElement("option");
             option.value = job;
             option.textContent = job;
-            if (job === rule.job) option.selected = true;
+            if (job === normalizeJob(rule.job)) option.selected = true;
             jobSelect.appendChild(option);
           });
 
@@ -1396,7 +1647,7 @@
         const warn = root.querySelector(`#warn-${teamKey}`);
         warn.innerHTML =
           "<b>目前未符合條件：</b><br>" +
-          failed.map(rule => `至少需要 ${rule.min} 位 ${escapeHtml(rule.job)}`).join("<br>");
+          failed.map(rule => `至少需要 ${rule.min} 位 ${escapeHtml(normalizeJob(rule.job))}`).join("<br>");
       }
     }
 
@@ -1460,7 +1711,7 @@
         id: uid(),
         name: player.name,
         level: player.level,
-        job: player.job,
+        job: normalizeJob(player.job),
         note: player.note || ""
       }));
 
@@ -1492,6 +1743,395 @@
     function showCloneError(message) {
       els.cloneModalError.textContent = message;
       els.cloneModalError.classList.add("show");
+    }
+
+    // =========================
+    // 公會截圖匯入精靈
+    // =========================
+    function openImportWizardModal() {
+      if (!requireEditable()) return;
+
+      state.importRows = [];
+      state.importRawTexts = [];
+      state.importFiles = [];
+      state.isOcrRunning = false;
+
+      els.importImageInput.value = "";
+      els.importModalError.classList.remove("show");
+      setOcrStatus("尚未開始。請先選擇截圖，再按「開始辨識」。");
+      renderImportPreviewTable();
+      renderRawOcrTexts();
+
+      els.importWizardModal.classList.add("show");
+    }
+
+    function closeImportWizardModal() {
+      if (state.isOcrRunning) return;
+      els.importWizardModal.classList.remove("show");
+      els.importModalError.classList.remove("show");
+    }
+
+    function setOcrStatus(text) {
+      els.ocrStatus.textContent = text;
+    }
+
+    async function startGuildScreenshotOCR() {
+      if (!requireEditable()) return;
+      if (state.isOcrRunning) return;
+
+      const files = Array.from(els.importImageInput.files || []);
+      if (!files.length) {
+        showImportError("請先選擇至少一張截圖");
+        return;
+      }
+
+      state.isOcrRunning = true;
+      els.importModalError.classList.remove("show");
+      state.importRows = [];
+      state.importRawTexts = [];
+      renderImportPreviewTable();
+      renderRawOcrTexts();
+
+      try {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          setOcrStatus(`正在辨識第 ${i + 1} / ${files.length} 張圖片：${file.name}`);
+
+          const result = await Tesseract.recognize(file, "chi_tra+eng", {
+            logger: (m) => {
+              if (m.status === "recognizing text" && typeof m.progress === "number") {
+                const percent = Math.round(m.progress * 100);
+                setOcrStatus(`正在辨識第 ${i + 1} / ${files.length} 張圖片：${file.name}（${percent}%）`);
+              }
+            }
+          });
+
+          const rawText = (result?.data?.text || "").trim();
+          state.importRawTexts.push({
+            fileName: file.name,
+            text: rawText
+          });
+
+          const parsedRows = parseGuildScreenshotText(rawText);
+          parsedRows.forEach(row => {
+            state.importRows.push({
+              id: uid(),
+              name: row.name || "",
+              job: normalizeJob(row.job),
+              level: row.level || "",
+              note: row.note || ""
+            });
+          });
+
+          renderRawOcrTexts();
+          renderImportPreviewTable();
+        }
+
+        state.importRows = dedupeImportRows(state.importRows);
+
+        renderImportPreviewTable();
+        renderRawOcrTexts();
+
+        if (!state.importRows.length) {
+          setOcrStatus("辨識完成，但沒有成功解析出人物資料。你可以手動新增列後再匯入。");
+        } else {
+          setOcrStatus(`辨識完成，共解析出 ${state.importRows.length} 筆人物資料。請先確認再匯入。`);
+        }
+      } catch (err) {
+        console.error(err);
+        showImportError("OCR 辨識失敗，請稍後再試，或改用較清晰的截圖。");
+      } finally {
+        state.isOcrRunning = false;
+      }
+    }
+
+    function dedupeImportRows(rows) {
+      const map = new Map();
+      rows.forEach(row => {
+        const key = `${row.name}|${normalizeJob(row.job)}|${row.level}`;
+        if (!row.name || !row.level) return;
+        if (!map.has(key)) map.set(key, row);
+      });
+      return Array.from(map.values());
+    }
+
+    function renderImportPreviewTable() {
+      els.importPreviewBody.innerHTML = "";
+
+      if (!state.importRows.length) {
+        els.importPreviewBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="small muted" style="padding:16px;">
+              尚未產生預覽資料。你可以先上傳截圖並開始辨識，或手動新增一列。
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      state.importRows.forEach((row, index) => {
+        const tr = document.createElement("tr");
+
+        const tdName = document.createElement("td");
+        const nameInput = document.createElement("input");
+        nameInput.value = row.name;
+        nameInput.placeholder = "名稱";
+        nameInput.addEventListener("input", (e) => {
+          row.name = e.target.value;
+        });
+        tdName.appendChild(nameInput);
+
+        const tdJob = document.createElement("td");
+        const jobSelect = document.createElement("select");
+        JOB_OPTIONS.forEach(job => {
+          const option = document.createElement("option");
+          option.value = job;
+          option.textContent = job;
+          if (normalizeJob(row.job) === job) option.selected = true;
+          jobSelect.appendChild(option);
+        });
+        jobSelect.addEventListener("change", (e) => {
+          row.job = normalizeJob(e.target.value);
+        });
+        tdJob.appendChild(jobSelect);
+
+        const tdLevel = document.createElement("td");
+        const levelInput = document.createElement("input");
+        levelInput.type = "number";
+        levelInput.min = "1";
+        levelInput.value = row.level;
+        levelInput.placeholder = "等級";
+        levelInput.addEventListener("input", (e) => {
+          row.level = e.target.value;
+        });
+        tdLevel.appendChild(levelInput);
+
+        const tdNote = document.createElement("td");
+        const noteInput = document.createElement("textarea");
+        noteInput.placeholder = "備註（非必填）";
+        noteInput.value = row.note || "";
+        noteInput.addEventListener("input", (e) => {
+          row.note = e.target.value;
+        });
+        tdNote.appendChild(noteInput);
+
+        const tdDelete = document.createElement("td");
+        const delBtn = document.createElement("button");
+        delBtn.className = "btn-danger";
+        delBtn.textContent = "刪除";
+        delBtn.addEventListener("click", () => {
+          state.importRows.splice(index, 1);
+          renderImportPreviewTable();
+        });
+        tdDelete.appendChild(delBtn);
+
+        tr.appendChild(tdName);
+        tr.appendChild(tdJob);
+        tr.appendChild(tdLevel);
+        tr.appendChild(tdNote);
+        tr.appendChild(tdDelete);
+
+        els.importPreviewBody.appendChild(tr);
+      });
+    }
+
+    function renderRawOcrTexts() {
+      els.ocrRawList.innerHTML = "";
+
+      if (!state.importRawTexts.length) {
+        els.ocrRawList.innerHTML = `<div class="small muted">尚未產生 OCR 原始文字。</div>`;
+        return;
+      }
+
+      state.importRawTexts.forEach(item => {
+        const box = document.createElement("div");
+        box.className = "wizard-raw-item";
+        box.innerHTML = `<b>${escapeHtml(item.fileName)}</b>\n${escapeHtml(item.text || "(空白)")}`;
+        els.ocrRawList.appendChild(box);
+      });
+    }
+
+    async function importRowsToDatabase() {
+      if (!requireEditable()) return;
+
+      const validRows = state.importRows
+        .map(row => ({
+          id: uid(),
+          name: String(row.name || "").trim(),
+          job: normalizeJob(row.job),
+          level: Number(row.level),
+          note: String(row.note || "").trim()
+        }))
+        .filter(row => row.name && row.level > 0);
+
+      if (!validRows.length) {
+        showImportError("沒有可匯入的有效資料，請先確認名稱與等級。");
+        return;
+      }
+
+      const players = [...state.data.players, ...validRows];
+      await patchRoom({ players });
+
+      closeImportWizardModal();
+      alert(`已匯入 ${validRows.length} 筆人物資料。`);
+    }
+
+    function showImportError(message) {
+      els.importModalError.textContent = message;
+      els.importModalError.classList.add("show");
+    }
+
+    function parseGuildScreenshotText(text) {
+      const lines = sanitizeOcrText(text)
+        .split("\n")
+        .map(line => cleanOcrLine(line))
+        .filter(Boolean)
+        .filter(line => !isNoiseLine(line));
+
+      const results = [];
+
+      // 先處理單行格式：名稱 職業 等級 職位
+      for (const line of lines) {
+        const sameLineParsed = parseSingleLineRow(line);
+        if (sameLineParsed) results.push(sameLineParsed);
+      }
+
+      // 再處理分行格式：名稱 / 職業 / 等級
+      for (let i = 0; i < lines.length - 2; i++) {
+        const nameLine = lines[i];
+        const jobLine = lines[i + 1];
+        const levelLine = lines[i + 2];
+
+        if (!isLikelyName(nameLine)) continue;
+
+        const job = detectJob(jobLine);
+        const level = extractLevel(levelLine) || extractLevel(jobLine);
+
+        if (job && level) {
+          results.push({
+            name: normalizeName(nameLine),
+            job,
+            level,
+            note: ""
+          });
+        }
+      }
+
+      return dedupeParsedRows(results);
+    }
+
+    function sanitizeOcrText(text) {
+      return String(text || "")
+        .replace(/\r/g, "\n")
+        .replace(/[（）]/g, m => m === "（" ? "(" : ")")
+        .replace(/[，]/g, "、")
+        .replace(/\t/g, " ")
+        .replace(/[|｜]/g, " ")
+        .replace(/\u00A0/g, " ");
+    }
+
+    function cleanOcrLine(line) {
+      return line
+        .replace(/\s+/g, " ")
+        .replace(/^[·•・。○◦]+/, "")
+        .trim();
+    }
+
+    function isNoiseLine(line) {
+      if (!line) return true;
+
+      const noiseKeywords = [
+        "使用者列表與公會", "隊伍", "公會", "公告", "上線", "離線",
+        "名稱", "職業", "等級", "職位", "資料", "位置", "密語", "對話",
+        "退出", "升職", "降職", "驅逐", "組隊邀請", "NM4DJ", "公會成員",
+        "副公會長", "公會長", "簽到", "龍王籌備中"
+      ];
+
+      if (noiseKeywords.some(k => line.includes(k) && line.length <= 20)) return true;
+      if (/^\[\d+\/\d+\]$/.test(line)) return true;
+      if (/^\d+\/\d+$/.test(line)) return true;
+      if (/^[\[\]0-9\/\s]+$/.test(line)) return true;
+
+      return false;
+    }
+
+    function detectJob(text) {
+      const normalized = String(text || "").replace(/\s+/g, "");
+      for (const item of JOB_ALIASES) {
+        for (const alias of item.aliases) {
+          if (normalized.includes(alias.replace(/\s+/g, ""))) {
+            return item.canonical;
+          }
+        }
+      }
+      return null;
+    }
+
+    function extractLevel(text) {
+      const match = String(text || "").match(/(?:^|[^0-9])(1[0-9]{2}|20[0-9])(?:[^0-9]|$)/);
+      return match ? Number(match[1]) : null;
+    }
+
+    function normalizeName(name) {
+      return String(name || "")
+        .replace(/^[·•・。○◦]+/, "")
+        .replace(/\s+/g, " ")
+        .replace(/公會成員|副公會長|公會長/g, "")
+        .trim();
+    }
+
+    function isLikelyName(text) {
+      if (!text) return false;
+      if (detectJob(text)) return false;
+      if (extractLevel(text)) return false;
+      if (text.length > 24) return false;
+      if (/公會成員|副公會長|公會長/.test(text)) return false;
+      return true;
+    }
+
+    function parseSingleLineRow(line) {
+      const job = detectJob(line);
+      const level = extractLevel(line);
+
+      if (!job || !level) return null;
+
+      const roleWords = ["公會成員", "副公會長", "公會長"];
+      let name = String(line);
+
+      const jobAliasesFlat = JOB_ALIASES.flatMap(item => item.aliases);
+      for (const alias of jobAliasesFlat) {
+        name = name.replace(alias, " ");
+      }
+
+      roleWords.forEach(word => {
+        name = name.replace(word, " ");
+      });
+
+      name = name.replace(String(level), " ");
+      name = normalizeName(name);
+
+      if (!name) return null;
+
+      return { name, job, level, note: "" };
+    }
+
+    function dedupeParsedRows(rows) {
+      const map = new Map();
+
+      rows.forEach(row => {
+        const name = normalizeName(row.name);
+        const job = normalizeJob(row.job);
+        const level = Number(row.level);
+
+        if (!name || !job || !level) return;
+
+        const key = `${name}|${job}|${level}`;
+        if (!map.has(key)) {
+          map.set(key, { name, job, level, note: "" });
+        }
+      });
+
+      return Array.from(map.values());
     }
 
     async function sha256(text) {
