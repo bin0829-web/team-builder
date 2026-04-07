@@ -1448,63 +1448,65 @@
       renderTeam("B", els.teamB);
     }
 
-    function renderPlayers() {
-      els.playerList.innerHTML = "";
-      const players = state.data.players.filter(player => {
-        return state.jobFilter === "全部" ? true : normalizeJob(player.job) === state.jobFilter;
-      });
+function renderPlayers() {
+  els.playerList.innerHTML = "";
 
-      if (!players.length) {
-        els.playerList.innerHTML = '<div class="card small">目前沒有符合篩選條件的人物資料。</div>';
-        return;
-      }
+  const players = state.data.players.filter(player => {
+    return state.jobFilter === "全部" ? true : normalizeJob(player.job) === state.jobFilter;
+  });
 
-      players.forEach(player => {
-        const assigned = getAssignedTeam(player.id);
-        const item = document.createElement("div");
-        item.className = "player-item" + (assigned ? " assigned" : "") + (state.isEditable ? " draggable" : "");
-        item.draggable = state.isEditable;
+  if (!players.length) {
+    els.playerList.innerHTML = '<div class="card small">目前沒有符合篩選條件的人物資料。</div>';
+    return;
+  }
 
-        item.addEventListener("dragstart", () => {
-          if (state.isEditable) state.draggingPlayerId = player.id;
-        });
+  players.forEach(player => {
+    const assigned = getAssignedTeam(player.id);
+    const item = document.createElement("div");
+    item.className = "player-item" + (assigned ? " assigned" : "") + (state.isEditable ? " draggable" : "");
+    item.draggable = state.isEditable;
 
-        item.addEventListener("dragend", () => {
-          state.draggingPlayerId = null;
-        });
+    item.addEventListener("dragstart", () => {
+      if (state.isEditable) state.draggingPlayerId = player.id;
+    });
 
-        item.innerHTML = `
-  <div class="player-main">
-    <div class="player-top">
-      <div class="player-name">${escapeHtml(player.name)}</div>
-      <span class="job-badge">${escapeHtml(normalizeJob(player.job))}</span>
-      <span class="tag">${assigned ? "已編入 " + assigned + " 隊" : "可拖拉加入隊伍"}</span>
-    </div>
+    item.addEventListener("dragend", () => {
+      state.draggingPlayerId = null;
+    });
 
-    <div class="meta">
-      <span>Lv.${player.level}</span>
-    </div>
+    item.innerHTML = `
+      <div class="player-main">
+        <div class="player-top">
+          <div class="player-name">${escapeHtml(player.name)}</div>
+          <span class="job-badge">${escapeHtml(normalizeJob(player.job))}</span>
+          <span class="tag">${assigned ? "已編入 " + assigned + " 隊" : "可拖拉加入隊伍"}</span>
+        </div>
 
-    ${player.note
-      ? `<div class="note-box">${escapeHtml(player.note)}</div>`
-      : `<div class="note-empty">尚未填寫備註</div>`}
-  </div>
+        <div class="meta">
+          <span>Lv.${player.level}</span>
+        </div>
 
-  <div class="actions">
-    <button class="btn-outline" data-move-a ${(!state.isEditable || assigned === "A") ? "disabled" : ""}>A</button>
-    <button class="btn-outline" data-move-b ${(!state.isEditable || assigned === "B") ? "disabled" : ""}>B</button>
-    <button class="btn-secondary" data-edit ${!state.isEditable ? "disabled" : ""}>修改</button>
-    <button class="btn-danger" data-delete ${!state.isEditable ? "disabled" : ""}>刪除</button>
-  </div>
-`;
+        ${player.note
+          ? `<div class="note-box">${escapeHtml(player.note)}</div>`
+          : `<div class="note-empty">尚未填寫備註</div>`}
+      </div>
 
-       item.querySelector("[data-move-a]").addEventListener("click", () => moveToTeam(player.id, "A"));
-item.querySelector("[data-move-b]").addEventListener("click", () => moveToTeam(player.id, "B"));
-item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
-item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
+      <div class="actions">
+        <button class="btn-outline" data-move-a ${(!state.isEditable || assigned === "A") ? "disabled" : ""}>A</button>
+        <button class="btn-outline" data-move-b ${(!state.isEditable || assigned === "B") ? "disabled" : ""}>B</button>
+        <button class="btn-secondary" data-edit ${!state.isEditable ? "disabled" : ""}>修改</button>
+        <button class="btn-danger" data-delete ${!state.isEditable ? "disabled" : ""}>刪除</button>
+      </div>
+    `;
 
-        els.playerList.appendChild(item);
-      });
+    item.querySelector("[data-move-a]").addEventListener("click", () => moveToTeam(player.id, "A"));
+    item.querySelector("[data-move-b]").addEventListener("click", () => moveToTeam(player.id, "B"));
+    item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
+    item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
+
+    els.playerList.appendChild(item);
+  });
+}
     }
 
     function renderTeam(teamKey, root) {
