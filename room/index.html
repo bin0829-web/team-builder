@@ -1474,27 +1474,29 @@
         });
 
         item.innerHTML = `
-          <div class="player-main">
-            <div class="player-top">
-              <div class="player-name">${escapeHtml(player.name)}</div>
-              <span class="job-badge">${escapeHtml(normalizeJob(player.job))}</span>
-              <span class="tag">${assigned ? "已編入 " + assigned + " 隊" : "可拖拉加入隊伍"}</span>
-            </div>
+  <div class="player-main">
+    <div class="player-top">
+      <div class="player-name">${escapeHtml(player.name)}</div>
+      <span class="job-badge">${escapeHtml(normalizeJob(player.job))}</span>
+      <span class="tag">${assigned ? "已編入 " + assigned + " 隊" : "可拖拉加入隊伍"}</span>
+    </div>
 
-            <div class="meta">
-              <span>Lv.${player.level}</span>
-            </div>
+    <div class="meta">
+      <span>Lv.${player.level}</span>
+    </div>
 
-            ${player.note
-              ? `<div class="note-box">${escapeHtml(player.note)}</div>`
-              : `<div class="note-empty">尚未填寫備註</div>`}
-          </div>
+    ${player.note
+      ? `<div class="note-box">${escapeHtml(player.note)}</div>`
+      : `<div class="note-empty">尚未填寫備註</div>`}
+  </div>
 
-          <div class="actions">
-            <button class="btn-secondary" data-edit ${!state.isEditable ? "disabled" : ""}>修改</button>
-            <button class="btn-danger" data-delete ${!state.isEditable ? "disabled" : ""}>刪除</button>
-          </div>
-        `;
+  <div class="actions">
+    <button class="btn-outline" data-move-a ${(!state.isEditable || assigned === "A") ? "disabled" : ""}>A</button>
+    <button class="btn-outline" data-move-b ${(!state.isEditable || assigned === "B") ? "disabled" : ""}>B</button>
+    <button class="btn-secondary" data-edit ${!state.isEditable ? "disabled" : ""}>修改</button>
+    <button class="btn-danger" data-delete ${!state.isEditable ? "disabled" : ""}>刪除</button>
+  </div>
+`;
 
         item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
         item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
