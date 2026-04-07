@@ -55,6 +55,7 @@
     }
     .readonly { background: #dbeafe; color: #1d4ed8; }
     .editable { background: #dcfce7; color: #15803d; }
+
     .layout {
       display: grid;
       grid-template-columns: 1.15fr 0.85fr;
@@ -244,6 +245,56 @@
       padding: 14px 16px;
       line-height: 1.7;
     }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 16px;
+    }
+    .modal-backdrop.show {
+      display: flex;
+    }
+    .modal {
+      width: min(420px, 100%);
+      background: #fff;
+      border: 1px solid #dbe3ef;
+      border-radius: 20px;
+      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+      padding: 22px;
+    }
+    .modal-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0 0 8px;
+    }
+    .modal-desc {
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .modal-error {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #b91c1c;
+      display: none;
+    }
+    .modal-error.show {
+      display: block;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
     @media (max-width: 1024px) {
       .layout { grid-template-columns: 1fr; }
     }
@@ -262,7 +313,7 @@
 <body>
   <div class="wrap">
     <h1 id="pageTitle">組隊小工具</h1>
-    <div class="sub">有連結即可看，輸入編輯密碼後才能修改。</div>
+    <div class="sub">有連結即可看，點選上方「進入編輯模式」並輸入密碼後才能修改。</div>
 
     <div class="topbar">
       <div class="status-row">
@@ -275,29 +326,6 @@
         <button class="btn-secondary" id="unlockBtn">進入編輯模式</button>
         <button class="btn-secondary" id="lockBtn" style="display:none;">鎖定</button>
       </div>
-    </div>
-
-    <div class="card" style="margin-bottom:20px;">
-      <div class="card-title">房間資訊與編輯設定</div>
-      <div class="form-grid" style="grid-template-columns: 1.2fr 1fr 1fr 1fr;">
-        <div>
-          <label for="shareLink">分享連結</label>
-          <input id="shareLink" type="text" readonly />
-        </div>
-        <div>
-          <label for="editPassword">編輯密碼</label>
-          <input id="editPassword" type="password" placeholder="輸入密碼以解鎖" />
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button class="btn-primary" id="savePasswordBtn" style="width:100%;">變更密碼</button>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button class="btn-secondary" id="verifyPasswordBtn" style="width:100%;">解鎖編輯</button>
-        </div>
-      </div>
-      <div class="small">只有輸入正確密碼後，才能新增、修改、刪除、拖拉與變更限制。</div>
     </div>
 
     <div class="layout">
@@ -341,6 +369,19 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="passwordModal">
+    <div class="modal">
+      <div class="modal-title">輸入編輯密碼</div>
+      <div class="modal-desc">驗證成功後，才能新增、修改、刪除、拖拉與變更限制。</div>
+      <input id="modalPasswordInput" type="password" placeholder="請輸入編輯密碼" />
+      <div class="modal-error" id="modalError">密碼錯誤</div>
+      <div class="modal-actions">
+        <button class="btn-outline" id="modalCancelBtn">取消</button>
+        <button class="btn-primary" id="modalConfirmBtn">進入編輯模式</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
     import {
@@ -352,7 +393,7 @@
       onSnapshot
     } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
-    const BASE = " ";
+    const BASE = "";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAol1EZ7XzMrw2esIdc4exXVTqDwTJRetM",
@@ -388,10 +429,7 @@
       backCreateBtn: document.getElementById("backCreateBtn"),
       unlockBtn: document.getElementById("unlockBtn"),
       lockBtn: document.getElementById("lockBtn"),
-      shareLink: document.getElementById("shareLink"),
-      editPassword: document.getElementById("editPassword"),
-      savePasswordBtn: document.getElementById("savePasswordBtn"),
-      verifyPasswordBtn: document.getElementById("verifyPasswordBtn"),
+
       name: document.getElementById("name"),
       level: document.getElementById("level"),
       job: document.getElementById("job"),
@@ -400,7 +438,13 @@
       cancelEditBtn: document.getElementById("cancelEditBtn"),
       playerList: document.getElementById("playerList"),
       teamA: document.getElementById("teamA"),
-      teamB: document.getElementById("teamB")
+      teamB: document.getElementById("teamB"),
+
+      passwordModal: document.getElementById("passwordModal"),
+      modalPasswordInput: document.getElementById("modalPasswordInput"),
+      modalError: document.getElementById("modalError"),
+      modalCancelBtn: document.getElementById("modalCancelBtn"),
+      modalConfirmBtn: document.getElementById("modalConfirmBtn")
     };
 
     bootstrap().catch((err) => {
@@ -430,12 +474,19 @@
       els.backCreateBtn.addEventListener("click", () => {
         window.location.href = `${BASE}/team-tool/`;
       });
-      els.unlockBtn.addEventListener("click", () => els.editPassword.focus());
+      els.unlockBtn.addEventListener("click", openPasswordModal);
       els.lockBtn.addEventListener("click", lockEditing);
-      els.savePasswordBtn.addEventListener("click", savePassword);
-      els.verifyPasswordBtn.addEventListener("click", verifyPassword);
       els.savePlayerBtn.addEventListener("click", savePlayer);
       els.cancelEditBtn.addEventListener("click", cancelEdit);
+
+      els.modalCancelBtn.addEventListener("click", closePasswordModal);
+      els.modalConfirmBtn.addEventListener("click", verifyPasswordFromModal);
+      els.passwordModal.addEventListener("click", (e) => {
+        if (e.target === els.passwordModal) closePasswordModal();
+      });
+      els.modalPasswordInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") verifyPasswordFromModal();
+      });
     }
 
     async function prepareRoom() {
@@ -450,7 +501,6 @@
 
       state.roomId = roomId;
       els.roomIdText.textContent = "房間 ID：" + roomId;
-      els.shareLink.value = `${window.location.origin}${BASE}/room/?id=${encodeURIComponent(roomId)}`;
 
       const snap = await getDoc(getRoomRef());
       if (!snap.exists()) {
@@ -525,38 +575,38 @@
       els.power.disabled = disabled;
       els.savePlayerBtn.disabled = disabled;
       els.cancelEditBtn.disabled = disabled;
-      els.savePasswordBtn.disabled = disabled;
+    }
+
+    function getShareUrl() {
+      return `${window.location.origin}${BASE}/room/?id=${encodeURIComponent(state.roomId)}`;
     }
 
     function copyShareLink() {
-      const shareUrl = `${window.location.origin}${BASE}/room/?id=${encodeURIComponent(state.roomId)}`;
+      const shareUrl = getShareUrl();
       navigator.clipboard.writeText(shareUrl)
         .then(() => alert("已複製分享連結"))
         .catch(() => alert("複製失敗，請手動複製網址"));
     }
 
-    async function savePassword() {
-      if (!state.isEditable) {
-        alert("請先解鎖編輯模式後，才能變更密碼。");
-        return;
-      }
-
-      const pwd = els.editPassword.value.trim();
-      if (!pwd) {
-        alert("請輸入新密碼");
-        return;
-      }
-
-      const hash = await sha256(pwd);
-      await patchRoom({ passwordHash: hash });
-      alert("密碼已更新");
-      els.editPassword.value = "";
+    function openPasswordModal() {
+      els.modalPasswordInput.value = "";
+      els.modalError.textContent = "密碼錯誤";
+      els.modalError.classList.remove("show");
+      els.passwordModal.classList.add("show");
+      setTimeout(() => els.modalPasswordInput.focus(), 30);
     }
 
-    async function verifyPassword() {
-      const pwd = els.editPassword.value.trim();
+    function closePasswordModal() {
+      els.passwordModal.classList.remove("show");
+      els.modalPasswordInput.value = "";
+      els.modalError.classList.remove("show");
+    }
+
+    async function verifyPasswordFromModal() {
+      const pwd = els.modalPasswordInput.value.trim();
       if (!pwd) {
-        alert("請輸入密碼");
+        els.modalError.textContent = "請輸入密碼";
+        els.modalError.classList.add("show");
         return;
       }
 
@@ -564,30 +614,34 @@
       const currentHash = state.data.passwordHash || "";
 
       if (!currentHash) {
-        alert("此房間尚未設定密碼");
+        els.modalError.textContent = "此房間尚未設定密碼";
+        els.modalError.classList.add("show");
         return;
       }
 
       if (inputHash !== currentHash) {
-        alert("密碼錯誤");
+        els.modalError.textContent = "密碼錯誤";
+        els.modalError.classList.add("show");
         return;
       }
 
       state.isEditable = true;
       updateModeUI();
+      closePasswordModal();
       alert("已進入編輯模式");
     }
 
     function lockEditing() {
       state.isEditable = false;
       resetForm();
+      closePasswordModal();
       updateModeUI();
       renderAll();
     }
 
     function requireEditable() {
       if (!state.isEditable) {
-        alert("目前是唯讀模式，請先輸入密碼解鎖編輯。");
+        alert("目前是唯讀模式，請先點上方「進入編輯模式」並輸入密碼。");
         return false;
       }
       return true;
