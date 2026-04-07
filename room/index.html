@@ -1498,8 +1498,10 @@
   </div>
 `;
 
-        item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
-        item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
+       item.querySelector("[data-move-a]").addEventListener("click", () => moveToTeam(player.id, "A"));
+item.querySelector("[data-move-b]").addEventListener("click", () => moveToTeam(player.id, "B"));
+item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
+item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
 
         els.playerList.appendChild(item);
       });
