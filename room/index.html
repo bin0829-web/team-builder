@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>組隊小工具｜房間</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+      background: #f3f6fb;
+      color: #1f2937;
+    }
+    .wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+    .sub {
+      color: #6b7280;
+      margin-bottom: 18px;
+    }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border: 1px solid #dbe3ef;
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+    .status-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .readonly { background: #dbeafe; color: #1d4ed8; }
+    .editable { background: #dcfce7; color: #15803d; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+    }
+    .right-col {
+      display: grid;
+      gap: 20px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #dbe3ef;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      padding: 20px;
+    }
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .small {
+      font-size: 14px;
+      color: #6b7280;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    input, select, button {
+      font: inherit;
+    }
+    input, select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fff;
+    }
+    input:disabled, select:disabled {
+      background: #f8fafc;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .btn-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .btn-outline {
+      background: #fff;
+      color: #111827;
+      border: 1px solid #cbd5e1;
+    }
+    .inline-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .player-list, .team-members, .constraint-list {
+      display: grid;
+      gap: 12px;
+    }
+    .player-item, .member-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid #dbe3ef;
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+    }
+    .player-item.assigned {
+      background: #f1f5f9;
+      opacity: 0.7;
+    }
+    .player-main {
+      min-width: 0;
+    }
+    .player-name {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .meta {
+      font-size: 14px;
+      color: #6b7280;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 700;
+    }
+    .team-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .team-drop {
+      min-height: 180px;
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 12px;
+      background: #f8fafc;
+      margin-bottom: 16px;
+    }
+    .team-drop.drag-over {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+    .empty {
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      text-align: center;
+      padding: 12px;
+    }
+    .constraint-row {
+      display: grid;
+      grid-template-columns: 1fr 100px 80px;
+      gap: 8px;
+      align-items: center;
+    }
+    .warn {
+      margin-top: 14px;
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      color: #9a3412;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 14px;
+    }
+    .info-box {
+      margin-top: 20px;
+      color: #475569;
+      font-size: 14px;
+      background: #fff;
+      border: 1px solid #dbe3ef;
+      border-radius: 16px;
+      padding: 14px 16px;
+      line-height: 1.7;
+    }
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .wrap { padding: 16px; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .constraint-row { grid-template-columns: 1fr 90px 64px; }
+      .player-item, .member-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .actions { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 id="pageTitle">組隊小工具</h1>
+    <div class="sub">有連結即可看，輸入編輯密碼後才能修改。</div>
+
+    <div class="topbar">
+      <div class="status-row">
+        <div id="modeBadge" class="mode-badge readonly">🔵 唯讀模式</div>
+        <div class="small" id="roomIdText">房間 ID：讀取中...</div>
+      </div>
+      <div class="inline-actions">
+        <button class="btn-outline" id="copyLinkBtn">複製分享連結</button>
+        <button class="btn-outline" id="backCreateBtn">建立新房間</button>
+        <button class="btn-secondary" id="unlockBtn">進入編輯模式</button>
+        <button class="btn-secondary" id="lockBtn" style="display:none;">鎖定</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">房間資訊與編輯設定</div>
+      <div class="form-grid" style="grid-template-columns: 1.2fr 1fr 1fr 1fr;">
+        <div>
+          <label for="shareLink">分享連結</label>
+          <input id="shareLink" type="text" readonly />
+        </div>
+        <div>
+          <label for="editPassword">編輯密碼</label>
+          <input id="editPassword" type="password" placeholder="輸入密碼以解鎖" />
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button class="btn-primary" id="savePasswordBtn" style="width:100%;">變更密碼</button>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button class="btn-secondary" id="verifyPasswordBtn" style="width:100%;">解鎖編輯</button>
+        </div>
+      </div>
+      <div class="small">只有輸入正確密碼後，才能新增、修改、刪除、拖拉與變更限制。</div>
+    </div>
+
+    <div class="layout">
+      <div class="card">
+        <div class="card-title">人物資料庫</div>
+        <div class="form-grid">
+          <div>
+            <label for="name">名稱</label>
+            <input id="name" type="text" placeholder="例如：彬的黑騎" />
+          </div>
+          <div>
+            <label for="level">等級</label>
+            <input id="level" type="number" placeholder="200" />
+          </div>
+          <div>
+            <label for="job">職業</label>
+            <select id="job"></select>
+          </div>
+          <div>
+            <label for="power">表功</label>
+            <input id="power" type="number" placeholder="2500000" />
+          </div>
+        </div>
+        <div class="inline-actions" style="margin-bottom:16px;">
+          <button class="btn-primary" id="savePlayerBtn">新增人物</button>
+          <button class="btn-secondary" id="cancelEditBtn" style="display:none;">取消編輯</button>
+        </div>
+        <div class="player-list" id="playerList"></div>
+      </div>
+
+      <div class="right-col">
+        <div class="card" id="teamA"></div>
+        <div class="card" id="teamB"></div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      第一次從分享連結打開時，預設為唯讀。<br>
+      隊伍中的人物可雙擊快速編輯。<br>
+      如果你是房主，請妥善保管編輯密碼。
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      updateDoc,
+      serverTimestamp,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA2p-CSfZi-GzYrzQdd1dule99KMI49VeY",
+      authDomain: "horntail-team-tool.firebaseapp.com",
+      projectId: "horntail-team-tool",
+      storageBucket: "horntail-team-tool.firebasestorage.app",
+      messagingSenderId: "130726856752",
+      appId: "1:130726856752:web:0cc428397ba7a6f14805f5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const JOB_OPTIONS = [
+      "黑騎士", "主教", "箭神", "神射手", "夜使者", "暗影神偷",
+      "英雄", "聖騎士", "冰雷", "火毒", "槍神", "拳霸", "其他"
+    ];
+
+    const state = {
+      roomId: "",
+      data: null,
+      draggingPlayerId: null,
+      editingPlayerId: null,
+      isEditable: false,
+      unsubscribe: null
+    };
+
+    const els = {
+      pageTitle: document.getElementById("pageTitle"),
+      modeBadge: document.getElementById("modeBadge"),
+      roomIdText: document.getElementById("roomIdText"),
+      copyLinkBtn: document.getElementById("copyLinkBtn"),
+      backCreateBtn: document.getElementById("backCreateBtn"),
+      unlockBtn: document.getElementById("unlockBtn"),
+      lockBtn: document.getElementById("lockBtn"),
+      shareLink: document.getElementById("shareLink"),
+      editPassword: document.getElementById("editPassword"),
+      savePasswordBtn: document.getElementById("savePasswordBtn"),
+      verifyPasswordBtn: document.getElementById("verifyPasswordBtn"),
+      name: document.getElementById("name"),
+      level: document.getElementById("level"),
+      job: document.getElementById("job"),
+      power: document.getElementById("power"),
+      savePlayerBtn: document.getElementById("savePlayerBtn"),
+      cancelEditBtn: document.getElementById("cancelEditBtn"),
+      playerList: document.getElementById("playerList"),
+      teamA: document.getElementById("teamA"),
+      teamB: document.getElementById("teamB")
+    };
+
+    bootstrap().catch((err) => {
+      console.error(err);
+      alert("初始化失敗，請確認網址與 Firebase 設定是否正確。");
+    });
+
+    async function bootstrap() {
+      initJobOptions();
+      bindEvents();
+      await prepareRoom();
+      subscribeRoom();
+      updateModeUI();
+    }
+
+    function initJobOptions() {
+      JOB_OPTIONS.forEach(job => {
+        const option = document.createElement("option");
+        option.value = job;
+        option.textContent = job;
+        els.job.appendChild(option);
+      });
+    }
+
+    function bindEvents() {
+      els.copyLinkBtn.addEventListener("click", copyShareLink);
+      els.backCreateBtn.addEventListener("click", () => {
+        window.location.href = "/team-tool/";
+      });
+      els.unlockBtn.addEventListener("click", () => els.editPassword.focus());
+      els.lockBtn.addEventListener("click", lockEditing);
+      els.savePasswordBtn.addEventListener("click", savePassword);
+      els.verifyPasswordBtn.addEventListener("click", verifyPassword);
+      els.savePlayerBtn.addEventListener("click", savePlayer);
+      els.cancelEditBtn.addEventListener("click", cancelEdit);
+    }
+
+    async function prepareRoom() {
+      const url = new URL(window.location.href);
+      const roomId = url.searchParams.get("id");
+
+      if (!roomId) {
+        alert("缺少房間 id，將返回建立房間頁面。");
+        window.location.href = "/team-tool/";
+        return;
+      }
+
+      state.roomId = roomId;
+      els.roomIdText.textContent = "房間 ID：" + roomId;
+      els.shareLink.value = `${window.location.origin}/room/?id=${encodeURIComponent(roomId)}`;
+
+      const snap = await getDoc(getRoomRef());
+      if (!snap.exists()) {
+        alert("找不到這個房間，將返回建立房間頁面。");
+        window.location.href = "/team-tool/";
+        return;
+      }
+    }
+
+    function subscribeRoom() {
+      if (state.unsubscribe) state.unsubscribe();
+
+      state.unsubscribe = onSnapshot(getRoomRef(), (snap) => {
+        if (!snap.exists()) return;
+        state.data = normalizeData(snap.data());
+        els.pageTitle.textContent = state.data.title || "組隊小工具";
+        renderAll();
+      });
+    }
+
+    function normalizeData(raw) {
+      return {
+        title: raw.title || "組隊小工具",
+        slug: raw.slug || state.roomId,
+        players: Array.isArray(raw.players) ? raw.players : [],
+        teams: {
+          A: {
+            members: Array.isArray(raw?.teams?.A?.members) ? raw.teams.A.members : [],
+            constraints: Array.isArray(raw?.teams?.A?.constraints)
+              ? raw.teams.A.constraints
+              : [{ id: uid(), job: "黑騎士", min: 1 }]
+          },
+          B: {
+            members: Array.isArray(raw?.teams?.B?.members) ? raw.teams.B.members : [],
+            constraints: Array.isArray(raw?.teams?.B?.constraints) ? raw.teams.B.constraints : []
+          }
+        },
+        passwordHash: raw.passwordHash || "",
+        createdAt: raw.createdAt || null,
+        updatedAt: raw.updatedAt || null
+      };
+    }
+
+    function getRoomRef() {
+      return doc(db, "horntailRooms", state.roomId);
+    }
+
+    async function patchRoom(patch) {
+      await updateDoc(getRoomRef(), {
+        ...patch,
+        updatedAt: serverTimestamp()
+      });
+    }
+
+    function updateModeUI() {
+      if (state.isEditable) {
+        els.modeBadge.className = "mode-badge editable";
+        els.modeBadge.textContent = "🟢 編輯模式";
+        els.unlockBtn.style.display = "none";
+        els.lockBtn.style.display = "inline-block";
+      } else {
+        els.modeBadge.className = "mode-badge readonly";
+        els.modeBadge.textContent = "🔵 唯讀模式";
+        els.unlockBtn.style.display = "inline-block";
+        els.lockBtn.style.display = "none";
+      }
+
+      const disabled = !state.isEditable;
+      els.name.disabled = disabled;
+      els.level.disabled = disabled;
+      els.job.disabled = disabled;
+      els.power.disabled = disabled;
+      els.savePlayerBtn.disabled = disabled;
+      els.cancelEditBtn.disabled = disabled;
+      els.savePasswordBtn.disabled = disabled;
+    }
+
+    function copyShareLink() {
+      const shareUrl = `${window.location.origin}/room/?id=${encodeURIComponent(state.roomId)}`;
+      navigator.clipboard.writeText(shareUrl)
+        .then(() => alert("已複製分享連結"))
+        .catch(() => alert("複製失敗，請手動複製網址"));
+    }
+
+    async function savePassword() {
+      if (!state.isEditable) {
+        alert("請先解鎖編輯模式後，才能變更密碼。");
+        return;
+      }
+
+      const pwd = els.editPassword.value.trim();
+      if (!pwd) {
+        alert("請輸入新密碼");
+        return;
+      }
+
+      const hash = await sha256(pwd);
+      await patchRoom({ passwordHash: hash });
+      alert("密碼已更新");
+      els.editPassword.value = "";
+    }
+
+    async function verifyPassword() {
+      const pwd = els.editPassword.value.trim();
+      if (!pwd) {
+        alert("請輸入密碼");
+        return;
+      }
+
+      const inputHash = await sha256(pwd);
+      const currentHash = state.data.passwordHash || "";
+
+      if (!currentHash) {
+        alert("此房間尚未設定密碼");
+        return;
+      }
+
+      if (inputHash !== currentHash) {
+        alert("密碼錯誤");
+        return;
+      }
+
+      state.isEditable = true;
+      updateModeUI();
+      alert("已進入編輯模式");
+    }
+
+    function lockEditing() {
+      state.isEditable = false;
+      resetForm();
+      updateModeUI();
+      renderAll();
+    }
+
+    function requireEditable() {
+      if (!state.isEditable) {
+        alert("目前是唯讀模式，請先輸入密碼解鎖編輯。");
+        return false;
+      }
+      return true;
+    }
+
+    function getAssignedTeam(playerId) {
+      if (state.data.teams.A.members.includes(playerId)) return "A";
+      if (state.data.teams.B.members.includes(playerId)) return "B";
+      return null;
+    }
+
+    function getPlayer(playerId) {
+      return state.data.players.find(p => p.id === playerId);
+    }
+
+    function resetForm() {
+      state.editingPlayerId = null;
+      els.name.value = "";
+      els.level.value = "";
+      els.power.value = "";
+      els.job.value = JOB_OPTIONS[0];
+      els.savePlayerBtn.textContent = "新增人物";
+      els.cancelEditBtn.style.display = "none";
+    }
+
+    function cancelEdit() {
+      resetForm();
+      renderAll();
+    }
+
+    function fillEditForm(playerId) {
+      const player = getPlayer(playerId);
+      if (!player) return;
+
+      state.editingPlayerId = playerId;
+      els.name.value = player.name;
+      els.level.value = player.level;
+      els.job.value = player.job;
+      els.power.value = player.power;
+      els.savePlayerBtn.textContent = "儲存修改";
+      els.cancelEditBtn.style.display = "inline-block";
+      els.name.focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function savePlayer() {
+      if (!requireEditable()) return;
+
+      const name = els.name.value.trim();
+      const level = Number(els.level.value);
+      const job = els.job.value;
+      const power = Number(els.power.value);
+
+      if (!name) return alert("請輸入人物名稱");
+      if (!level || level < 1) return alert("請輸入正確等級");
+      if (!power || power < 0) return alert("請輸入正確表功");
+
+      const players = [...state.data.players];
+
+      if (state.editingPlayerId) {
+        const target = players.find(p => p.id === state.editingPlayerId);
+        if (!target) return;
+        target.name = name;
+        target.level = level;
+        target.job = job;
+        target.power = power;
+      } else {
+        players.push({ id: uid(), name, level, job, power });
+      }
+
+      await patchRoom({ players });
+      resetForm();
+    }
+
+    async function removePlayer(playerId) {
+      if (!requireEditable()) return;
+
+      const players = state.data.players.filter(p => p.id !== playerId);
+      const teams = structuredClone(state.data.teams);
+      teams.A.members = teams.A.members.filter(id => id !== playerId);
+      teams.B.members = teams.B.members.filter(id => id !== playerId);
+
+      await patchRoom({ players, teams });
+
+      if (state.editingPlayerId === playerId) resetForm();
+    }
+
+    async function moveToTeam(playerId, teamKey) {
+      if (!requireEditable()) return;
+
+      const teams = structuredClone(state.data.teams);
+      const otherKey = teamKey === "A" ? "B" : "A";
+
+      if (teams[teamKey].members.includes(playerId)) return;
+      if (teams[teamKey].members.length >= 6) {
+        alert(teamKey + " 隊已滿 6 人");
+        return;
+      }
+
+      teams[otherKey].members = teams[otherKey].members.filter(id => id !== playerId);
+      teams[teamKey].members.push(playerId);
+      await patchRoom({ teams });
+    }
+
+    async function removeFromTeam(playerId, teamKey) {
+      if (!requireEditable()) return;
+
+      const teams = structuredClone(state.data.teams);
+      teams[teamKey].members = teams[teamKey].members.filter(id => id !== playerId);
+      await patchRoom({ teams });
+    }
+
+    async function addConstraint(teamKey) {
+      if (!requireEditable()) return;
+
+      const teams = structuredClone(state.data.teams);
+      teams[teamKey].constraints.push({ id: uid(), job: "黑騎士", min: 1 });
+      await patchRoom({ teams });
+    }
+
+    async function updateConstraint(teamKey, constraintId, field, value) {
+      if (!requireEditable()) return;
+
+      const teams = structuredClone(state.data.teams);
+      const target = teams[teamKey].constraints.find(c => c.id === constraintId);
+      if (!target) return;
+      target[field] = value;
+      await patchRoom({ teams });
+    }
+
+    async function removeConstraint(teamKey, constraintId) {
+      if (!requireEditable()) return;
+
+      const teams = structuredClone(state.data.teams);
+      teams[teamKey].constraints = teams[teamKey].constraints.filter(c => c.id !== constraintId);
+      await patchRoom({ teams });
+    }
+
+    function getTeamStats(teamKey) {
+      const members = state.data.teams[teamKey].members.map(getPlayer).filter(Boolean);
+      const totalPower = members.reduce((sum, p) => sum + p.power, 0);
+
+      const jobCount = {};
+      members.forEach(member => {
+        jobCount[member.job] = (jobCount[member.job] || 0) + 1;
+      });
+
+      const failed = state.data.teams[teamKey].constraints.filter(rule => {
+        return (jobCount[rule.job] || 0) < Number(rule.min || 0);
+      });
+
+      return { members, totalPower, failed };
+    }
+
+    function renderAll() {
+      if (!state.data) return;
+      updateModeUI();
+      renderPlayers();
+      renderTeam("A", els.teamA);
+      renderTeam("B", els.teamB);
+    }
+
+    function renderPlayers() {
+      els.playerList.innerHTML = "";
+      const players = state.data.players;
+
+      if (!players.length) {
+        els.playerList.innerHTML = '<div class="card small">還沒有人物資料，先新增幾筆試試看。</div>';
+        return;
+      }
+
+      players.forEach(player => {
+        const assigned = getAssignedTeam(player.id);
+        const item = document.createElement("div");
+        item.className = "player-item" + (assigned ? " assigned" : "");
+        item.draggable = state.isEditable && !assigned;
+
+        item.addEventListener("dragstart", () => {
+          if (state.isEditable && !assigned) state.draggingPlayerId = player.id;
+        });
+        item.addEventListener("dragend", () => {
+          state.draggingPlayerId = null;
+        });
+
+        item.innerHTML = `
+          <div class="player-main">
+            <div class="player-name">${escapeHtml(player.name)}</div>
+            <div class="meta">
+              <span>Lv.${player.level}</span>
+              <span>${escapeHtml(player.job)}</span>
+              <span>表功 ${player.power.toLocaleString()}</span>
+            </div>
+          </div>
+          <div class="actions">
+            <span class="tag">${assigned ? "已編入 " + assigned + " 隊" : "可拖拉 / 可加入"}</span>
+            <button class="btn-secondary" data-add-team="A" ${(!state.isEditable || assigned) ? "disabled" : ""}>加入A</button>
+            <button class="btn-secondary" data-add-team="B" ${(!state.isEditable || assigned) ? "disabled" : ""}>加入B</button>
+            <button class="btn-secondary" data-edit ${!state.isEditable ? "disabled" : ""}>修改</button>
+            <button class="btn-danger" data-delete ${!state.isEditable ? "disabled" : ""}>刪除</button>
+          </div>
+        `;
+
+        item.querySelector('[data-add-team="A"]').addEventListener("click", () => moveToTeam(player.id, "A"));
+        item.querySelector('[data-add-team="B"]').addEventListener("click", () => moveToTeam(player.id, "B"));
+        item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
+        item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
+
+        els.playerList.appendChild(item);
+      });
+    }
+
+    function renderTeam(teamKey, root) {
+      const { members, totalPower, failed } = getTeamStats(teamKey);
+      const isEditable = state.isEditable;
+
+      root.innerHTML = `
+        <div class="team-head">
+          <div>
+            <div class="card-title" style="margin-bottom:6px;">${teamKey} 隊伍</div>
+            <div class="small">總表功：${totalPower.toLocaleString()}</div>
+          </div>
+          <span class="tag">${members.length}/6 人</span>
+        </div>
+
+        <div class="team-drop" id="drop-${teamKey}">
+          ${members.length === 0
+            ? '<div class="empty">把人物拖拉到這裡，或從左側直接按加入按鈕</div>'
+            : '<div class="team-members"></div>'}
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
+          <div class="card-title" style="font-size:18px;margin:0;">隊伍職業限制</div>
+          <button class="btn-secondary" id="add-rule-${teamKey}" ${!isEditable ? "disabled" : ""}>新增限制</button>
+        </div>
+
+        <div class="constraint-list" id="rules-${teamKey}"></div>
+        ${failed.length ? '<div class="warn" id="warn-' + teamKey + '"></div>' : ""}
+      `;
+
+      const drop = root.querySelector(`#drop-${teamKey}`);
+
+      if (isEditable) {
+        drop.addEventListener("dragover", e => {
+          e.preventDefault();
+          drop.classList.add("drag-over");
+        });
+        drop.addEventListener("dragleave", () => {
+          drop.classList.remove("drag-over");
+        });
+        drop.addEventListener("drop", e => {
+          e.preventDefault();
+          drop.classList.remove("drag-over");
+          if (state.draggingPlayerId) moveToTeam(state.draggingPlayerId, teamKey);
+          state.draggingPlayerId = null;
+        });
+      }
+
+      root.querySelector(`#add-rule-${teamKey}`).addEventListener("click", () => addConstraint(teamKey));
+
+      if (members.length > 0) {
+        const membersWrap = root.querySelector(".team-members");
+
+        members.forEach(member => {
+          const row = document.createElement("div");
+          row.className = "member-item";
+          row.title = isEditable ? "雙擊可快速編輯" : "唯讀模式";
+          row.draggable = isEditable;
+
+          if (isEditable) {
+            row.addEventListener("dragstart", () => {
+              state.draggingPlayerId = member.id;
+            });
+            row.addEventListener("dragend", () => {
+              state.draggingPlayerId = null;
+            });
+            row.addEventListener("dblclick", () => fillEditForm(member.id));
+          }
+
+          row.innerHTML = `
+            <div class="player-main">
+              <div class="player-name">${escapeHtml(member.name)}</div>
+              <div class="meta">
+                <span>Lv.${member.level}</span>
+                <span>${escapeHtml(member.job)}</span>
+                <span>表功 ${member.power.toLocaleString()}</span>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn-secondary" data-edit-team ${!isEditable ? "disabled" : ""}>修改</button>
+              <button class="btn-secondary" data-remove-team ${!isEditable ? "disabled" : ""}>移出</button>
+            </div>
+          `;
+
+          row.querySelector("[data-edit-team]").addEventListener("click", () => fillEditForm(member.id));
+          row.querySelector("[data-remove-team]").addEventListener("click", () => removeFromTeam(member.id, teamKey));
+
+          membersWrap.appendChild(row);
+        });
+      }
+
+      const rulesWrap = root.querySelector(`#rules-${teamKey}`);
+      const constraints = state.data.teams[teamKey].constraints;
+
+      if (!constraints.length) {
+        rulesWrap.innerHTML = '<div class="small">尚未設定限制</div>';
+      } else {
+        constraints.forEach(rule => {
+          const row = document.createElement("div");
+          row.className = "constraint-row";
+
+          const jobSelect = document.createElement("select");
+          jobSelect.disabled = !isEditable;
+
+          JOB_OPTIONS.forEach(job => {
+            const option = document.createElement("option");
+            option.value = job;
+            option.textContent = job;
+            if (job === rule.job) option.selected = true;
+            jobSelect.appendChild(option);
+          });
+
+          jobSelect.addEventListener("change", e => {
+            updateConstraint(teamKey, rule.id, "job", e.target.value);
+          });
+
+          const minInput = document.createElement("input");
+          minInput.type = "number";
+          minInput.min = "1";
+          minInput.value = rule.min;
+          minInput.disabled = !isEditable;
+          minInput.addEventListener("change", e => {
+            updateConstraint(teamKey, rule.id, "min", Math.max(1, Number(e.target.value || 1)));
+          });
+
+          const delBtn = document.createElement("button");
+          delBtn.className = "btn-danger";
+          delBtn.textContent = "刪除";
+          delBtn.disabled = !isEditable;
+          delBtn.addEventListener("click", () => removeConstraint(teamKey, rule.id));
+
+          row.appendChild(jobSelect);
+          row.appendChild(minInput);
+          row.appendChild(delBtn);
+          rulesWrap.appendChild(row);
+        });
+      }
+
+      if (failed.length) {
+        const warn = root.querySelector(`#warn-${teamKey}`);
+        warn.innerHTML =
+          "<b>目前未符合條件：</b><br>" +
+          failed.map(rule => `至少需要 ${rule.min} 位 ${escapeHtml(rule.job)}`).join("<br>");
+      }
+    }
+
+    function uid() {
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    async function sha256(text) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
