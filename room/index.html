@@ -19,14 +19,61 @@
     }
 
     .wrap {
-      max-width: 1440px;
+      max-width: 1480px;
       margin: 0 auto;
       padding: 24px;
     }
 
+    .page-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .page-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
     h1 {
-      margin: 0 0 8px;
+      margin: 0;
       font-size: 30px;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .icon-btn {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #334155;
+      border-radius: 12px;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.18s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+      flex: 0 0 auto;
+    }
+
+    .icon-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
 
     .sub {
@@ -79,23 +126,23 @@
       color: #15803d;
     }
 
-   .layout {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 20px;
-  align-items: start;
-}
+    .layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+      align-items: start;
+    }
 
-.right-col {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-self: start;
-}
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-self: start;
+    }
 
-.right-col > .card {
-  flex: 0 0 auto;
-}
+    .right-col > .card {
+      flex: 0 0 auto;
+    }
 
     .card {
       background: rgba(255,255,255,0.94);
@@ -252,7 +299,7 @@
 
     .list-toolbar {
       display: grid;
-      grid-template-columns: 220px 1fr;
+      grid-template-columns: 220px 220px;
       gap: 12px;
       margin-bottom: 14px;
       align-items: end;
@@ -271,28 +318,38 @@
     }
 
     .player-item,
-    .member-item {
+    .member-item,
+    .team-card {
       position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 10px;
       border: 1px solid #dbe3ef;
       border-radius: 16px;
-      padding: 12px;
       background:
         linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.96) 100%);
-      min-height: 162px;
       box-shadow:
         0 10px 18px rgba(15, 23, 42, 0.05),
         0 2px 6px rgba(15, 23, 42, 0.04),
         inset 0 1px 0 rgba(255,255,255,0.95);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
       overflow: hidden;
     }
 
+    .player-item,
+    .member-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      min-height: 162px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .team-card {
+      padding: 14px;
+    }
+
     .player-item::before,
-    .member-item::before {
+    .member-item::before,
+    .team-card::before {
       content: "";
       position: absolute;
       inset: 0 0 auto 0;
@@ -302,7 +359,8 @@
     }
 
     .player-item:hover,
-    .member-item:hover {
+    .member-item:hover,
+    .team-card:hover {
       transform: translateY(-2px);
       box-shadow:
         0 16px 28px rgba(15, 23, 42, 0.08),
@@ -317,12 +375,13 @@
       border-color: #d7e3f8;
     }
 
-    .player-item.draggable {
+    .player-item.draggable,
+    .member-item.draggable {
       cursor: grab;
     }
 
     .player-item.draggable:active,
-    .member-item:active {
+    .member-item.draggable:active {
       cursor: grabbing;
     }
 
@@ -391,6 +450,7 @@
       gap: 8px;
       flex-wrap: wrap;
       margin-top: auto;
+      position: relative;
     }
 
     .actions button {
@@ -411,12 +471,54 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
     }
 
+    .team-panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .team-list {
+      display: grid;
+      gap: 14px;
+    }
+
     .team-head {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 12px;
+    }
+
+    .team-head-main {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .team-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .team-title {
+      font-size: 20px;
+      font-weight: 800;
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .team-head-actions {
+      display: flex;
+      gap: 8px;
+      flex: 0 0 auto;
+      align-items: center;
     }
 
     .team-drop {
@@ -445,6 +547,14 @@
       text-align: center;
       padding: 12px;
       line-height: 1.8;
+    }
+
+    .collapsed-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 48px;
     }
 
     .constraint-row {
@@ -477,6 +587,44 @@
       box-shadow:
         0 10px 24px rgba(15, 23, 42, 0.05),
         inset 0 1px 0 rgba(255,255,255,0.95);
+    }
+
+    .join-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 220px;
+      background: rgba(255,255,255,0.98);
+      border: 1px solid #dbe3ef;
+      border-radius: 14px;
+      box-shadow:
+        0 18px 28px rgba(15, 23, 42, 0.14),
+        inset 0 1px 0 rgba(255,255,255,0.95);
+      padding: 8px;
+      z-index: 30;
+      display: grid;
+      gap: 6px;
+    }
+
+    .join-menu-title {
+      font-size: 12px;
+      color: #64748b;
+      padding: 4px 6px 6px;
+      font-weight: 700;
+    }
+
+    .join-menu button {
+      text-align: left;
+      justify-content: space-between;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .join-menu-meta {
+      font-size: 12px;
+      color: #64748b;
     }
 
     .modal-backdrop {
@@ -696,12 +844,22 @@
       .wizard-table {
         min-width: 680px;
       }
+
+      .join-menu {
+        min-width: 190px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1 id="pageTitle">組隊小工具</h1>
+    <div class="page-head">
+      <div class="page-title-wrap">
+        <h1 id="pageTitle">組隊小工具</h1>
+        <button class="icon-btn" id="editRoomTitleBtn" title="編輯房間名稱">✏️</button>
+      </div>
+    </div>
+
     <div class="sub">有連結即可看，點選上方「進入編輯模式」並輸入密碼後才能修改。</div>
 
     <div class="topbar">
@@ -761,7 +919,14 @@
                 <label for="jobFilter">篩選職業</label>
                 <select id="jobFilter"></select>
               </div>
-              <div class="small muted" style="align-self:end;">人物請直接拖拉到右側隊伍，不再提供快捷加入按鈕。</div>
+              <div>
+                <label for="sortMode">等級排序</label>
+                <select id="sortMode">
+                  <option value="default">預設</option>
+                  <option value="asc">等級由低到高</option>
+                  <option value="desc">等級由高到低</option>
+                </select>
+              </div>
             </div>
 
             <div class="player-list" id="playerList"></div>
@@ -770,14 +935,19 @@
       </div>
 
       <div class="right-col">
-        <div class="card" id="teamA"></div>
-        <div class="card" id="teamB"></div>
+        <div class="card">
+          <div class="team-panel-head">
+            <div class="card-title" style="margin-bottom:0;">隊伍列表</div>
+            <button class="btn-primary" id="addTeamBtn">新增隊伍</button>
+          </div>
+          <div class="team-list" id="teamList"></div>
+        </div>
       </div>
     </div>
 
     <div class="info-box">
       第一次從分享連結打開時，預設為唯讀。<br>
-      人物可直接拖拉到右側隊伍。<br>
+      人物可拖拉到右側隊伍，也可用「加入」小選單加入。<br>
       隊伍中的人物可雙擊快速編輯。<br>
       公會截圖匯入會先自動辨識，再讓你手動確認後匯入。<br>
       如果你是房主，請妥善保管編輯密碼。
@@ -831,7 +1001,7 @@
     </div>
   </div>
 
-  <!-- 公會截圖匯入精靈 -->
+  <!-- 公會截圖匯入 -->
   <div class="modal-backdrop" id="importWizardModal">
     <div class="modal">
       <div class="modal-title">從公會截圖匯入</div>
@@ -934,8 +1104,8 @@
       { canonical: "主教", aliases: ["主教"] },
       { canonical: "英雄", aliases: ["英雄"] },
       { canonical: "聖騎士", aliases: ["聖騎士", "圣骑士"] },
-      { canonical: "大魔導士(冰、雷)", aliases: ["大魔導士(冰、雷)", "大魔導士(冰雷)", "大魔導士冰雷", "冰雷", "冰、雷", "大魔导师(冰、雷)", "大魔導士(冰,雷)", "大魔导士(冰、雷)"] },
-      { canonical: "大魔導士(火、毒)", aliases: ["大魔導士(火、毒)", "大魔導士(火毒)", "大魔導士火毒", "火毒", "火、毒", "大魔导师(火、毒)", "大魔導士(火,毒)", "大魔导士(火、毒)"] },
+      { canonical: "大魔導士(冰、雷)", aliases: ["大魔導士(冰、雷)", "大魔導士(冰雷)", "大魔導士冰雷", "冰雷", "冰、雷", "大魔導士(冰,雷)", "大魔導師(冰、雷)", "大魔导师(冰、雷)", "大魔导士(冰、雷)"] },
+      { canonical: "大魔導士(火、毒)", aliases: ["大魔導士(火、毒)", "大魔導士(火毒)", "大魔導士火毒", "火毒", "火、毒", "大魔導士(火,毒)", "大魔導師(火、毒)", "大魔导师(火、毒)", "大魔导士(火、毒)"] },
       { canonical: "夜使者", aliases: ["夜使者"] },
       { canonical: "暗影神偷", aliases: ["暗影神偷"] },
       { canonical: "箭神", aliases: ["箭神"] },
@@ -945,14 +1115,24 @@
       { canonical: "其他", aliases: ["其他"] }
     ];
 
+    const MAX_TEAMS = 26;
+    const TEAM_CAPACITY = 6;
+
     function uid() {
       return Math.random().toString(36).slice(2) + Date.now().toString(36);
     }
 
-    const DEFAULT_CONSTRAINTS = {
-      A: [{ id: uid(), job: "黑騎士", min: 1 }],
-      B: []
-    };
+    function defaultTeamName(teamKey) {
+      return `${teamKey}隊伍`;
+    }
+
+    function createDefaultTeam(teamKey) {
+      return {
+        name: defaultTeamName(teamKey),
+        members: [],
+        constraints: teamKey === "A" ? [{ id: uid(), job: "黑騎士", min: 1 }] : []
+      };
+    }
 
     const state = {
       roomId: "",
@@ -962,14 +1142,18 @@
       isEditable: false,
       unsubscribe: null,
       jobFilter: "全部",
+      sortMode: "default",
       importRows: [],
       importRawTexts: [],
       importFiles: [],
-      isOcrRunning: false
+      isOcrRunning: false,
+      openJoinMenuPlayerId: null,
+      collapsedTeams: {}
     };
 
     const els = {
       pageTitle: document.getElementById("pageTitle"),
+      editRoomTitleBtn: document.getElementById("editRoomTitleBtn"),
       modeBadge: document.getElementById("modeBadge"),
       roomIdText: document.getElementById("roomIdText"),
       copyLinkBtn: document.getElementById("copyLinkBtn"),
@@ -978,17 +1162,18 @@
       importWizardBtn: document.getElementById("importWizardBtn"),
       unlockBtn: document.getElementById("unlockBtn"),
       lockBtn: document.getElementById("lockBtn"),
+      addTeamBtn: document.getElementById("addTeamBtn"),
 
       name: document.getElementById("name"),
       level: document.getElementById("level"),
       job: document.getElementById("job"),
       note: document.getElementById("note"),
       jobFilter: document.getElementById("jobFilter"),
+      sortMode: document.getElementById("sortMode"),
       savePlayerBtn: document.getElementById("savePlayerBtn"),
       cancelEditBtn: document.getElementById("cancelEditBtn"),
       playerList: document.getElementById("playerList"),
-      teamA: document.getElementById("teamA"),
-      teamB: document.getElementById("teamB"),
+      teamList: document.getElementById("teamList"),
 
       passwordModal: document.getElementById("passwordModal"),
       modalPasswordInput: document.getElementById("modalPasswordInput"),
@@ -1053,6 +1238,13 @@
     }
 
     function bindEvents() {
+      document.addEventListener("click", () => {
+        if (state.openJoinMenuPlayerId) {
+          state.openJoinMenuPlayerId = null;
+          renderPlayers();
+        }
+      });
+
       els.copyLinkBtn.addEventListener("click", copyShareLink);
       els.backCreateBtn.addEventListener("click", () => {
         window.location.href = `${BASE}/team-tool/`;
@@ -1061,10 +1253,17 @@
       els.importWizardBtn.addEventListener("click", openImportWizardModal);
       els.unlockBtn.addEventListener("click", openPasswordModal);
       els.lockBtn.addEventListener("click", lockEditing);
+      els.addTeamBtn.addEventListener("click", addTeam);
+      els.editRoomTitleBtn.addEventListener("click", renameRoomTitle);
+
       els.savePlayerBtn.addEventListener("click", savePlayer);
       els.cancelEditBtn.addEventListener("click", cancelEdit);
       els.jobFilter.addEventListener("change", () => {
         state.jobFilter = els.jobFilter.value;
+        renderPlayers();
+      });
+      els.sortMode.addEventListener("change", () => {
+        state.sortMode = els.sortMode.value;
         renderPlayers();
       });
 
@@ -1132,12 +1331,13 @@
         if (!snap.exists()) return;
         state.data = normalizeData(snap.data());
         els.pageTitle.textContent = state.data.title || "組隊小工具";
+        syncCollapsedTeams();
         renderAll();
       });
     }
 
     function normalizeJob(job) {
-      const value = (job || "").trim();
+      const value = String(job || "").trim();
       if (!value) return "其他";
 
       for (const item of JOB_ALIASES) {
@@ -1146,6 +1346,37 @@
       }
 
       return JOB_OPTIONS.includes(value) ? value : "其他";
+    }
+
+    function normalizeTeams(rawTeams) {
+      const validKeys = rawTeams && typeof rawTeams === "object"
+        ? Object.keys(rawTeams).filter(k => /^[A-Z]$/.test(k)).sort()
+        : [];
+
+      if (!validKeys.length) {
+        return {
+          A: createDefaultTeam("A"),
+          B: createDefaultTeam("B")
+        };
+      }
+
+      const teams = {};
+      validKeys.forEach(teamKey => {
+        const source = rawTeams[teamKey] || {};
+        teams[teamKey] = {
+          name: String(source.name || defaultTeamName(teamKey)).trim() || defaultTeamName(teamKey),
+          members: Array.isArray(source.members) ? source.members : [],
+          constraints: Array.isArray(source.constraints)
+            ? source.constraints.map(rule => ({
+                id: rule.id || uid(),
+                job: normalizeJob(rule.job),
+                min: Math.max(1, Number(rule.min || 1))
+              }))
+            : (teamKey === "A" ? [{ id: uid(), job: "黑騎士", min: 1 }] : [])
+        };
+      });
+
+      return teams;
     }
 
     function normalizeData(raw) {
@@ -1161,24 +1392,19 @@
               note: player.note || ""
             }))
           : [],
-        teams: {
-          A: {
-            members: Array.isArray(raw?.teams?.A?.members) ? raw.teams.A.members : [],
-            constraints: Array.isArray(raw?.teams?.A?.constraints)
-              ? raw.teams.A.constraints.map(rule => ({ ...rule, job: normalizeJob(rule.job) }))
-              : structuredClone(DEFAULT_CONSTRAINTS.A)
-          },
-          B: {
-            members: Array.isArray(raw?.teams?.B?.members) ? raw.teams.B.members : [],
-            constraints: Array.isArray(raw?.teams?.B?.constraints)
-              ? raw.teams.B.constraints.map(rule => ({ ...rule, job: normalizeJob(rule.job) }))
-              : structuredClone(DEFAULT_CONSTRAINTS.B)
-          }
-        },
+        teams: normalizeTeams(raw.teams),
         passwordHash: raw.passwordHash || "",
         createdAt: raw.createdAt || null,
         updatedAt: raw.updatedAt || null
       };
+    }
+
+    function syncCollapsedTeams() {
+      const newState = {};
+      getTeamKeys().forEach(teamKey => {
+        newState[teamKey] = state.collapsedTeams[teamKey] || false;
+      });
+      state.collapsedTeams = newState;
     }
 
     function getRoomRef(id = state.roomId) {
@@ -1190,6 +1416,37 @@
         ...patch,
         updatedAt: serverTimestamp()
       });
+    }
+
+    function getTeamKeys() {
+      return Object.keys(state.data?.teams || {}).sort();
+    }
+
+    function getNextTeamKey() {
+      for (let i = 0; i < MAX_TEAMS; i++) {
+        const key = String.fromCharCode(65 + i);
+        if (!state.data.teams[key]) return key;
+      }
+      return null;
+    }
+
+    function getAssignedTeam(playerId) {
+      for (const teamKey of getTeamKeys()) {
+        if (state.data.teams[teamKey].members.includes(playerId)) return teamKey;
+      }
+      return null;
+    }
+
+    function getPlayer(playerId) {
+      return state.data.players.find(p => p.id === playerId);
+    }
+
+    function getTeamMemberCount(teamKey) {
+      return state.data.teams[teamKey].members.length;
+    }
+
+    function isTeamFull(teamKey) {
+      return getTeamMemberCount(teamKey) >= TEAM_CAPACITY;
     }
 
     function updateModeUI() {
@@ -1214,6 +1471,8 @@
       els.cancelEditBtn.disabled = disabled;
       els.cloneRoomBtn.disabled = disabled;
       els.importWizardBtn.disabled = disabled;
+      els.addTeamBtn.disabled = disabled;
+      els.editRoomTitleBtn.disabled = disabled;
     }
 
     function getShareUrl() {
@@ -1272,6 +1531,7 @@
 
     function lockEditing() {
       state.isEditable = false;
+      state.openJoinMenuPlayerId = null;
       resetForm();
       closePasswordModal();
       closeCloneRoomModal();
@@ -1285,16 +1545,6 @@
         return false;
       }
       return true;
-    }
-
-    function getAssignedTeam(playerId) {
-      if (state.data.teams.A.members.includes(playerId)) return "A";
-      if (state.data.teams.B.members.includes(playerId)) return "B";
-      return null;
-    }
-
-    function getPlayer(playerId) {
-      return state.data.players.find(p => p.id === playerId);
     }
 
     function resetForm() {
@@ -1361,8 +1611,10 @@
 
       const players = state.data.players.filter(p => p.id !== playerId);
       const teams = structuredClone(state.data.teams);
-      teams.A.members = teams.A.members.filter(id => id !== playerId);
-      teams.B.members = teams.B.members.filter(id => id !== playerId);
+
+      getTeamKeys().forEach(teamKey => {
+        teams[teamKey].members = teams[teamKey].members.filter(id => id !== playerId);
+      });
 
       await patchRoom({ players, teams });
 
@@ -1371,19 +1623,26 @@
 
     async function moveToTeam(playerId, teamKey) {
       if (!requireEditable()) return;
+      if (!state.data.teams[teamKey]) return;
 
       const teams = structuredClone(state.data.teams);
-      const otherKey = teamKey === "A" ? "B" : "A";
+      const currentTeam = getAssignedTeam(playerId);
 
-      if (teams[teamKey].members.includes(playerId)) return;
-      if (teams[teamKey].members.length >= 6) {
-        alert(teamKey + " 隊已滿 6 人");
+      if (currentTeam === teamKey) return;
+
+      if (teams[teamKey].members.length >= TEAM_CAPACITY) {
+        alert(`${teams[teamKey].name} 已滿 ${TEAM_CAPACITY} 人`);
         return;
       }
 
-      teams[otherKey].members = teams[otherKey].members.filter(id => id !== playerId);
+      Object.keys(teams).forEach(key => {
+        teams[key].members = teams[key].members.filter(id => id !== playerId);
+      });
+
       teams[teamKey].members.push(playerId);
+
       await patchRoom({ teams });
+      state.openJoinMenuPlayerId = null;
     }
 
     async function removeFromTeam(playerId, teamKey) {
@@ -1421,8 +1680,63 @@
       await patchRoom({ teams });
     }
 
+    async function addTeam() {
+      if (!requireEditable()) return;
+
+      const nextKey = getNextTeamKey();
+      if (!nextKey) {
+        alert("已達隊伍上限 26 個（A ~ Z）");
+        return;
+      }
+
+      const teams = structuredClone(state.data.teams);
+      teams[nextKey] = createDefaultTeam(nextKey);
+      state.collapsedTeams[nextKey] = false;
+      await patchRoom({ teams });
+    }
+
+    async function renameTeam(teamKey) {
+      if (!requireEditable()) return;
+
+      const current = state.data.teams[teamKey]?.name || defaultTeamName(teamKey);
+      const name = prompt("請輸入新的隊伍名稱", current);
+      if (name === null) return;
+
+      const nextName = String(name).trim();
+      if (!nextName) {
+        alert("隊伍名稱不可為空白");
+        return;
+      }
+
+      const teams = structuredClone(state.data.teams);
+      teams[teamKey].name = nextName;
+      await patchRoom({ teams });
+    }
+
+    async function renameRoomTitle() {
+      if (!requireEditable()) return;
+
+      const current = state.data?.title || "組隊小工具";
+      const title = prompt("請輸入新的房間名稱", current);
+      if (title === null) return;
+
+      const nextTitle = String(title).trim();
+      if (!nextTitle) {
+        alert("房間名稱不可為空白");
+        return;
+      }
+
+      await patchRoom({ title: nextTitle });
+    }
+
+    function toggleCollapseTeam(teamKey) {
+      state.collapsedTeams[teamKey] = !state.collapsedTeams[teamKey];
+      renderTeams();
+    }
+
     function getTeamStats(teamKey) {
-      const members = state.data.teams[teamKey].members.map(getPlayer).filter(Boolean);
+      const team = state.data.teams[teamKey];
+      const members = team.members.map(getPlayer).filter(Boolean);
       const avgLevel = members.length
         ? Math.round(members.reduce((sum, p) => sum + Number(p.level || 0), 0) / members.length)
         : 0;
@@ -1433,92 +1747,192 @@
         jobCount[job] = (jobCount[job] || 0) + 1;
       });
 
-      const failed = state.data.teams[teamKey].constraints.filter(rule => {
+      const failed = team.constraints.filter(rule => {
         return (jobCount[normalizeJob(rule.job)] || 0) < Number(rule.min || 0);
       });
 
       return { members, avgLevel, failed };
     }
 
+    function sortPlayers(players) {
+      const cloned = [...players];
+      if (state.sortMode === "asc") {
+        cloned.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name, "zh-Hant"));
+      } else if (state.sortMode === "desc") {
+        cloned.sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, "zh-Hant"));
+      }
+      return cloned;
+    }
+
     function renderAll() {
       if (!state.data) return;
       updateModeUI();
       renderPlayers();
-      renderTeam("A", els.teamA);
-      renderTeam("B", els.teamB);
+      renderTeams();
     }
 
-function renderPlayers() {
-  els.playerList.innerHTML = "";
+    function renderPlayers() {
+      els.playerList.innerHTML = "";
 
-  const players = state.data.players.filter(player => {
-    return state.jobFilter === "全部" ? true : normalizeJob(player.job) === state.jobFilter;
-  });
+      let players = state.data.players.filter(player => {
+        return state.jobFilter === "全部" ? true : normalizeJob(player.job) === state.jobFilter;
+      });
 
-  if (!players.length) {
-    els.playerList.innerHTML = '<div class="card small">目前沒有符合篩選條件的人物資料。</div>';
-    return;
-  }
+      players = sortPlayers(players);
 
-  players.forEach(player => {
-    const assigned = getAssignedTeam(player.id);
-    const item = document.createElement("div");
-    item.className = "player-item" + (assigned ? " assigned" : "") + (state.isEditable ? " draggable" : "");
-    item.draggable = state.isEditable;
+      if (!players.length) {
+        els.playerList.innerHTML = '<div class="card small">目前沒有符合條件的人物資料。</div>';
+        return;
+      }
 
-    item.addEventListener("dragstart", () => {
-      if (state.isEditable) state.draggingPlayerId = player.id;
-    });
+      players.forEach(player => {
+        const assigned = getAssignedTeam(player.id);
+        const item = document.createElement("div");
+        item.className = "player-item" + (assigned ? " assigned" : "") + (state.isEditable ? " draggable" : "");
+        item.draggable = state.isEditable;
 
-    item.addEventListener("dragend", () => {
-      state.draggingPlayerId = null;
-    });
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+        });
 
-    item.innerHTML = `
-      <div class="player-main">
-        <div class="player-top">
-          <div class="player-name">${escapeHtml(player.name)}</div>
-          <span class="job-badge">${escapeHtml(normalizeJob(player.job))}</span>
-          <span class="tag">${assigned ? "已編入 " + assigned + " 隊" : "可拖拉加入隊伍"}</span>
-        </div>
+        item.addEventListener("dragstart", () => {
+          if (state.isEditable) state.draggingPlayerId = player.id;
+        });
 
-        <div class="meta">
-          <span>Lv.${player.level}</span>
-        </div>
+        item.addEventListener("dragend", () => {
+          state.draggingPlayerId = null;
+        });
 
-        ${player.note
-          ? `<div class="note-box">${escapeHtml(player.note)}</div>`
-          : `<div class="note-empty">尚未填寫備註</div>`}
-      </div>
+        item.innerHTML = `
+          <div class="player-main">
+            <div class="player-top">
+              <div class="player-name">${escapeHtml(player.name)}</div>
+              <span class="job-badge">${escapeHtml(normalizeJob(player.job))}</span>
+              <span class="tag">${assigned ? "已編入 " + escapeHtml(state.data.teams[assigned]?.name || assigned) : "可加入隊伍"}</span>
+            </div>
 
-      <div class="actions">
-        <button class="btn-outline" data-move-a ${(!state.isEditable || assigned === "A") ? "disabled" : ""}>A</button>
-        <button class="btn-outline" data-move-b ${(!state.isEditable || assigned === "B") ? "disabled" : ""}>B</button>
-        <button class="btn-secondary" data-edit ${!state.isEditable ? "disabled" : ""}>修改</button>
-        <button class="btn-danger" data-delete ${!state.isEditable ? "disabled" : ""}>刪除</button>
-      </div>
-    `;
+            <div class="meta">
+              <span>Lv.${player.level}</span>
+            </div>
 
-    item.querySelector("[data-move-a]").addEventListener("click", () => moveToTeam(player.id, "A"));
-    item.querySelector("[data-move-b]").addEventListener("click", () => moveToTeam(player.id, "B"));
-    item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
-    item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
+            ${player.note
+              ? `<div class="note-box">${escapeHtml(player.note)}</div>`
+              : `<div class="note-empty">尚未填寫備註</div>`}
+          </div>
 
-    els.playerList.appendChild(item);
-  });
-}
+          <div class="actions">
+            <button class="btn-outline" data-open-join ${!state.isEditable ? "disabled" : ""}>加入</button>
+            <button class="btn-secondary" data-edit ${!state.isEditable ? "disabled" : ""}>修改</button>
+            <button class="btn-danger" data-delete ${!state.isEditable ? "disabled" : ""}>刪除</button>
+            ${state.openJoinMenuPlayerId === player.id ? `<div class="join-menu" data-join-menu></div>` : ""}
+          </div>
+        `;
 
-function renderTeam(teamKey, root) {
+        item.querySelector("[data-open-join]").addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (!state.isEditable) return;
+          state.openJoinMenuPlayerId = state.openJoinMenuPlayerId === player.id ? null : player.id;
+          renderPlayers();
+        });
+
+        item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
+        item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
+
+        if (state.openJoinMenuPlayerId === player.id) {
+          const menu = item.querySelector("[data-join-menu]");
+          renderJoinMenu(menu, player.id);
+        }
+
+        els.playerList.appendChild(item);
+      });
+    }
+
+    function renderJoinMenu(menuEl, playerId) {
+      const currentTeam = getAssignedTeam(playerId);
+      const keys = getTeamKeys();
+
+      menuEl.innerHTML = `<div class="join-menu-title">選擇要加入的隊伍</div>`;
+
+      keys.forEach(teamKey => {
+        const team = state.data.teams[teamKey];
+        const count = team.members.length;
+        const sameTeam = currentTeam === teamKey;
+        const full = count >= TEAM_CAPACITY;
+
+        const btn = document.createElement("button");
+        btn.className = "btn-outline";
+        btn.disabled = sameTeam || full;
+        btn.innerHTML = `
+          <span>${escapeHtml(team.name)}</span>
+          <span class="join-menu-meta">${sameTeam ? "目前所在" : `${count}/${TEAM_CAPACITY}`}</span>
+        `;
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (sameTeam || full) return;
+          moveToTeam(playerId, teamKey);
+        });
+
+        menuEl.appendChild(btn);
+      });
+    }
+
+    function renderTeams() {
+      els.teamList.innerHTML = "";
+
+      const teamKeys = getTeamKeys();
+      if (!teamKeys.length) {
+        els.teamList.innerHTML = '<div class="small">目前尚未建立隊伍</div>';
+        return;
+      }
+
+      teamKeys.forEach(teamKey => {
+        const teamCard = document.createElement("div");
+        teamCard.className = "team-card";
+        renderTeam(teamKey, teamCard);
+        els.teamList.appendChild(teamCard);
+      });
+    }
+
+    function renderTeam(teamKey, root) {
+      const team = state.data.teams[teamKey];
       const { members, avgLevel, failed } = getTeamStats(teamKey);
       const isEditable = state.isEditable;
+      const isCollapsed = !!state.collapsedTeams[teamKey];
+
+      if (isCollapsed) {
+        root.innerHTML = `
+          <div class="team-head" style="margin-bottom:0;">
+            <div class="team-head-main">
+              <div class="team-title-row">
+                <div class="team-title">${escapeHtml(team.name)}</div>
+                <span class="tag">${members.length}/${TEAM_CAPACITY} 人</span>
+              </div>
+            </div>
+            <div class="team-head-actions">
+              <button class="icon-btn" data-rename-team title="修改隊伍名稱" ${!isEditable ? "disabled" : ""}>✏️</button>
+              <button class="icon-btn" data-toggle-collapse title="展開">+</button>
+            </div>
+          </div>
+        `;
+
+        root.querySelector("[data-rename-team]").addEventListener("click", () => renameTeam(teamKey));
+        root.querySelector("[data-toggle-collapse]").addEventListener("click", () => toggleCollapseTeam(teamKey));
+        return;
+      }
 
       root.innerHTML = `
         <div class="team-head">
-          <div>
-            <div class="card-title" style="margin-bottom:6px;">${teamKey} 隊伍</div>
+          <div class="team-head-main">
+            <div class="team-title-row">
+              <div class="team-title">${escapeHtml(team.name)}</div>
+              <span class="tag">${members.length}/${TEAM_CAPACITY} 人</span>
+            </div>
             <div class="small">平均等級：${avgLevel}</div>
           </div>
-          <span class="tag">${members.length}/6 人</span>
+          <div class="team-head-actions">
+            <button class="icon-btn" data-rename-team title="修改隊伍名稱" ${!isEditable ? "disabled" : ""}>✏️</button>
+            <button class="icon-btn" data-toggle-collapse title="收合">−</button>
+          </div>
         </div>
 
         <div class="team-drop" id="drop-${teamKey}">
@@ -1528,18 +1942,21 @@ function renderTeam(teamKey, root) {
         </div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
-          <div class="card-title" style="font-size:18px;margin:0;">隊伍職業限制</div>
+          <div class="section-title" style="margin:0;">隊伍職業限制</div>
           <button class="btn-secondary" id="add-rule-${teamKey}" ${!isEditable ? "disabled" : ""}>新增限制</button>
         </div>
 
         <div class="constraint-list" id="rules-${teamKey}"></div>
-        ${failed.length ? '<div class="warn" id="warn-' + teamKey + '"></div>' : ""}
+        ${failed.length ? `<div class="warn" id="warn-${teamKey}"></div>` : ""}
       `;
+
+      root.querySelector("[data-rename-team]").addEventListener("click", () => renameTeam(teamKey));
+      root.querySelector("[data-toggle-collapse]").addEventListener("click", () => toggleCollapseTeam(teamKey));
 
       const drop = root.querySelector(`#drop-${teamKey}`);
 
       if (isEditable) {
-        drop.addEventListener("dragover", e => {
+        drop.addEventListener("dragover", (e) => {
           e.preventDefault();
           drop.classList.add("drag-over");
         });
@@ -1548,7 +1965,7 @@ function renderTeam(teamKey, root) {
           drop.classList.remove("drag-over");
         });
 
-        drop.addEventListener("drop", e => {
+        drop.addEventListener("drop", (e) => {
           e.preventDefault();
           drop.classList.remove("drag-over");
           if (state.draggingPlayerId) moveToTeam(state.draggingPlayerId, teamKey);
@@ -1563,7 +1980,7 @@ function renderTeam(teamKey, root) {
 
         members.forEach(member => {
           const row = document.createElement("div");
-          row.className = "member-item";
+          row.className = "member-item" + (isEditable ? " draggable" : "");
           row.title = isEditable ? "雙擊可快速編輯" : "唯讀模式";
           row.draggable = isEditable;
 
@@ -1609,7 +2026,7 @@ function renderTeam(teamKey, root) {
       }
 
       const rulesWrap = root.querySelector(`#rules-${teamKey}`);
-      const constraints = state.data.teams[teamKey].constraints;
+      const constraints = team.constraints;
 
       if (!constraints.length) {
         rulesWrap.innerHTML = '<div class="small">尚未設定限制</div>';
@@ -1691,19 +2108,16 @@ function renderTeam(teamKey, root) {
         showCloneError("請輸入房間名稱");
         return;
       }
-
       if (!slug) {
         showCloneError("請輸入 slug");
         return;
       }
-
       if (!password) {
         showCloneError("請輸入密碼");
         return;
       }
 
       const safeSlug = slug.toLowerCase().replace(/[^a-z0-9-_]/g, "-");
-
       if (!safeSlug) {
         showCloneError("slug 格式不正確，請使用英數、- 或 _");
         return;
@@ -1732,14 +2146,8 @@ function renderTeam(teamKey, root) {
         slug: safeSlug,
         players: clonedPlayers,
         teams: {
-          A: {
-            members: [],
-            constraints: [{ id: uid(), job: "黑騎士", min: 1 }]
-          },
-          B: {
-            members: [],
-            constraints: []
-          }
+          A: createDefaultTeam("A"),
+          B: createDefaultTeam("B")
         },
         passwordHash,
         createdAt: serverTimestamp(),
@@ -1757,9 +2165,6 @@ function renderTeam(teamKey, root) {
       els.cloneModalError.classList.add("show");
     }
 
-    // =========================
-    // 公會截圖匯入精靈
-    // =========================
     function openImportWizardModal() {
       if (!requireEditable()) return;
 
@@ -1840,7 +2245,6 @@ function renderTeam(teamKey, root) {
         }
 
         state.importRows = dedupeImportRows(state.importRows);
-
         renderImportPreviewTable();
         renderRawOcrTexts();
 
@@ -2002,13 +2406,11 @@ function renderTeam(teamKey, root) {
 
       const results = [];
 
-      // 先處理單行格式：名稱 職業 等級 職位
       for (const line of lines) {
         const sameLineParsed = parseSingleLineRow(line);
         if (sameLineParsed) results.push(sameLineParsed);
       }
 
-      // 再處理分行格式：名稱 / 職業 / 等級
       for (let i = 0; i < lines.length - 2; i++) {
         const nameLine = lines[i];
         const jobLine = lines[i + 1];
