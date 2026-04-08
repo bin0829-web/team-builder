@@ -1507,7 +1507,8 @@ function renderPlayers() {
     els.playerList.appendChild(item);
   });
 }
-    }
+
+function renderTeam(teamKey, root) {
 
     function renderTeam(teamKey, root) {
       const { members, avgLevel, failed } = getTeamStats(teamKey);
