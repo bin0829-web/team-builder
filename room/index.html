@@ -1246,12 +1246,17 @@
     }
 
     function bindEvents() {
-      document.addEventListener("click", () => {
-        if (state.openJoinMenuPlayerId) {
-          state.openJoinMenuPlayerId = null;
-          renderPlayers();
-        }
-      });
+      document.addEventListener("click", (e) => {
+  if (!state.openJoinMenuPlayerId) return;
+
+  const insideJoinMenu = e.target.closest(".join-menu");
+  const insideJoinButton = e.target.closest("[data-open-join]");
+
+  if (insideJoinMenu || insideJoinButton) return;
+
+  state.openJoinMenuPlayerId = null;
+  renderPlayers();
+});
 
       els.copyLinkBtn.addEventListener("click", copyShareLink);
       els.backCreateBtn.addEventListener("click", () => {
@@ -1841,11 +1846,12 @@
         `;
 
         item.querySelector("[data-open-join]").addEventListener("click", (e) => {
-          e.stopPropagation();
-          if (!state.isEditable) return;
-          state.openJoinMenuPlayerId = state.openJoinMenuPlayerId === player.id ? null : player.id;
-          renderPlayers();
-        });
+  e.preventDefault();
+  e.stopPropagation();
+  if (!state.isEditable) return;
+  state.openJoinMenuPlayerId = state.openJoinMenuPlayerId === player.id ? null : player.id;
+  renderPlayers();
+});
 
         item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
         item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
@@ -1860,6 +1866,9 @@
     }
 
     function renderJoinMenu(menuEl, playerId) {
+      menuEl.addEventListener("click", (e) => {
+  e.stopPropagation();
+});
       const currentTeam = getAssignedTeam(playerId);
       const keys = getTeamKeys();
 
