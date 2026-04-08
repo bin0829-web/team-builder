@@ -1796,7 +1796,11 @@
       players.forEach(player => {
         const assigned = getAssignedTeam(player.id);
         const item = document.createElement("div");
-        item.className = "player-item" + (assigned ? " assigned" : "") + (state.isEditable ? " draggable" : "");
+        item.className =
+  "player-item" +
+  (assigned ? " assigned" : "") +
+  (state.isEditable ? " draggable" : "") +
+  (state.openJoinMenuPlayerId === player.id ? " menu-open" : "");
         item.draggable = state.isEditable;
 
         item.addEventListener("click", (e) => {
