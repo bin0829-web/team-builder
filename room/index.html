@@ -448,12 +448,15 @@
     }
 
     .actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: auto;
-      position: relative;
-    }
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: auto;
+
+  /* ⭐ 確保選單定位正常 */
+  position: relative;
+  overflow: visible;
+}
 
     .actions button {
       padding: 8px 10px;
