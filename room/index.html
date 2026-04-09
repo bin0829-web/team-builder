@@ -312,27 +312,30 @@
       gap: 12px;
     }
 
+    .player-list {
+      position: relative;
+      overflow: visible;
+    }
+
     .constraint-list {
       display: grid;
       gap: 12px;
     }
 
     .player-item,
-.member-item,
-.team-card {
-  position: relative;
-  border: 1px solid #dbe3ef;
-  border-radius: 16px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.96) 100%);
-  box-shadow:
-    0 10px 18px rgba(15, 23, 42, 0.05),
-    0 2px 6px rgba(15, 23, 42, 0.04),
-    inset 0 1px 0 rgba(255,255,255,0.95);
-
-  /* ⭐ 關鍵修正：讓加入選單不被裁切 */
-  overflow: visible;
-}
+    .member-item,
+    .team-card {
+      position: relative;
+      border: 1px solid #dbe3ef;
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.96) 100%);
+      box-shadow:
+        0 10px 18px rgba(15, 23, 42, 0.05),
+        0 2px 6px rgba(15, 23, 42, 0.04),
+        inset 0 1px 0 rgba(255,255,255,0.95);
+      overflow: visible;
+    }
 
     .player-item,
     .member-item {
@@ -369,6 +372,19 @@
         0 4px 10px rgba(15, 23, 42, 0.05),
         inset 0 1px 0 rgba(255,255,255,0.95);
       border-color: #c8d8ee;
+    }
+
+    .player-item.menu-open {
+      z-index: 300;
+    }
+
+    .player-item.menu-open,
+    .player-item.menu-open:hover {
+      transform: none !important;
+    }
+
+    .player-item.menu-open .actions {
+      z-index: 301;
     }
 
     .player-item.assigned {
@@ -448,15 +464,13 @@
     }
 
     .actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: auto;
-
-  /* ⭐ 確保選單定位正常 */
-  position: relative;
-  overflow: visible;
-}
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: auto;
+      position: relative;
+      overflow: visible;
+    }
 
     .actions button {
       padding: 8px 10px;
@@ -524,6 +538,7 @@
       gap: 8px;
       flex: 0 0 auto;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .team-drop {
@@ -594,22 +609,23 @@
         inset 0 1px 0 rgba(255,255,255,0.95);
     }
 
-  .join-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  min-width: 220px;
-  background: rgba(255,255,255,0.98);
-  border: 1px solid #dbe3ef;
-  border-radius: 14px;
-  box-shadow:
-    0 18px 28px rgba(15, 23, 42, 0.14),
-    inset 0 1px 0 rgba(255,255,255,0.95);
-  padding: 8px;
-  z-index: 9999;
-  display: grid;
-  gap: 6px;
-}
+    .join-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 220px;
+      background: rgba(255,255,255,0.98);
+      border: 1px solid #dbe3ef;
+      border-radius: 14px;
+      box-shadow:
+        0 18px 28px rgba(15, 23, 42, 0.14),
+        inset 0 1px 0 rgba(255,255,255,0.95);
+      padding: 8px;
+      z-index: 9999;
+      display: grid;
+      gap: 6px;
+      pointer-events: auto;
+    }
 
     .join-menu-title {
       font-size: 12px;
@@ -853,9 +869,6 @@
       .join-menu {
         min-width: 190px;
       }
-      .player-item.menu-open {
-  z-index: 200;
-}
     }
   </style>
 </head>
@@ -962,7 +975,6 @@
     </div>
   </div>
 
-  <!-- 編輯密碼 -->
   <div class="modal-backdrop" id="passwordModal">
     <div class="modal modal-sm">
       <div class="modal-title">輸入編輯密碼</div>
@@ -976,7 +988,6 @@
     </div>
   </div>
 
-  <!-- 保留人物另開新房間 -->
   <div class="modal-backdrop" id="cloneRoomModal">
     <div class="modal modal-sm">
       <div class="modal-title">保留人物資料庫另開新房間</div>
@@ -1009,7 +1020,6 @@
     </div>
   </div>
 
-  <!-- 公會截圖匯入 -->
   <div class="modal-backdrop" id="importWizardModal">
     <div class="modal">
       <div class="modal-title">從公會截圖匯入</div>
@@ -1247,16 +1257,16 @@
 
     function bindEvents() {
       document.addEventListener("click", (e) => {
-  if (!state.openJoinMenuPlayerId) return;
+        if (!state.openJoinMenuPlayerId) return;
 
-  const insideJoinMenu = e.target.closest(".join-menu");
-  const insideJoinButton = e.target.closest("[data-open-join]");
+        const insideJoinMenu = e.target.closest(".join-menu");
+        const insideJoinButton = e.target.closest("[data-open-join]");
 
-  if (insideJoinMenu || insideJoinButton) return;
+        if (insideJoinMenu || insideJoinButton) return;
 
-  state.openJoinMenuPlayerId = null;
-  renderPlayers();
-});
+        state.openJoinMenuPlayerId = null;
+        renderPlayers();
+      });
 
       els.copyLinkBtn.addEventListener("click", copyShareLink);
       els.backCreateBtn.addEventListener("click", () => {
@@ -1726,6 +1736,29 @@
       await patchRoom({ teams });
     }
 
+    async function deleteTeam(teamKey) {
+      if (!requireEditable()) return;
+
+      if (teamKey === "A" || teamKey === "B") {
+        alert("A 隊伍與 B 隊伍為預設固定隊伍，不能刪除。");
+        return;
+      }
+
+      const team = state.data.teams[teamKey];
+      if (!team) return;
+
+      const ok = confirm(
+        `確定要刪除「${team.name}」嗎？\n\n此隊伍內的成員會從隊伍中移除，回到未編隊狀態。`
+      );
+      if (!ok) return;
+
+      const teams = structuredClone(state.data.teams);
+      delete teams[teamKey];
+      delete state.collapsedTeams[teamKey];
+
+      await patchRoom({ teams });
+    }
+
     async function renameRoomTitle() {
       if (!requireEditable()) return;
 
@@ -1802,10 +1835,10 @@
         const assigned = getAssignedTeam(player.id);
         const item = document.createElement("div");
         item.className =
-  "player-item" +
-  (assigned ? " assigned" : "") +
-  (state.isEditable ? " draggable" : "") +
-  (state.openJoinMenuPlayerId === player.id ? " menu-open" : "");
+          "player-item" +
+          (assigned ? " assigned" : "") +
+          (state.isEditable ? " draggable" : "") +
+          (state.openJoinMenuPlayerId === player.id ? " menu-open" : "");
         item.draggable = state.isEditable;
 
         item.addEventListener("click", (e) => {
@@ -1846,12 +1879,12 @@
         `;
 
         item.querySelector("[data-open-join]").addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (!state.isEditable) return;
-  state.openJoinMenuPlayerId = state.openJoinMenuPlayerId === player.id ? null : player.id;
-  renderPlayers();
-});
+          e.preventDefault();
+          e.stopPropagation();
+          if (!state.isEditable) return;
+          state.openJoinMenuPlayerId = state.openJoinMenuPlayerId === player.id ? null : player.id;
+          renderPlayers();
+        });
 
         item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
         item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
@@ -1867,8 +1900,9 @@
 
     function renderJoinMenu(menuEl, playerId) {
       menuEl.addEventListener("click", (e) => {
-  e.stopPropagation();
-});
+        e.stopPropagation();
+      });
+
       const currentTeam = getAssignedTeam(playerId);
       const keys = getTeamKeys();
 
@@ -1931,12 +1965,21 @@
             </div>
             <div class="team-head-actions">
               <button class="icon-btn" data-rename-team title="修改隊伍名稱" ${!isEditable ? "disabled" : ""}>✏️</button>
+              ${teamKey !== "A" && teamKey !== "B"
+                ? `<button class="icon-btn" data-delete-team title="刪除隊伍" ${!isEditable ? "disabled" : ""}>🗑️</button>`
+                : ""}
               <button class="icon-btn" data-toggle-collapse title="展開">+</button>
             </div>
           </div>
         `;
 
         root.querySelector("[data-rename-team]").addEventListener("click", () => renameTeam(teamKey));
+
+        const deleteBtn = root.querySelector("[data-delete-team]");
+        if (deleteBtn) {
+          deleteBtn.addEventListener("click", () => deleteTeam(teamKey));
+        }
+
         root.querySelector("[data-toggle-collapse]").addEventListener("click", () => toggleCollapseTeam(teamKey));
         return;
       }
@@ -1952,6 +1995,9 @@
           </div>
           <div class="team-head-actions">
             <button class="icon-btn" data-rename-team title="修改隊伍名稱" ${!isEditable ? "disabled" : ""}>✏️</button>
+            ${teamKey !== "A" && teamKey !== "B"
+              ? `<button class="icon-btn" data-delete-team title="刪除隊伍" ${!isEditable ? "disabled" : ""}>🗑️</button>`
+              : ""}
             <button class="icon-btn" data-toggle-collapse title="收合">−</button>
           </div>
         </div>
@@ -1972,6 +2018,12 @@
       `;
 
       root.querySelector("[data-rename-team]").addEventListener("click", () => renameTeam(teamKey));
+
+      const deleteBtn = root.querySelector("[data-delete-team]");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", () => deleteTeam(teamKey));
+      }
+
       root.querySelector("[data-toggle-collapse]").addEventListener("click", () => toggleCollapseTeam(teamKey));
 
       const drop = root.querySelector(`#drop-${teamKey}`);
