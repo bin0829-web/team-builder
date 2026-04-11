@@ -299,10 +299,94 @@
 
     .list-toolbar {
       display: grid;
-      grid-template-columns: 220px 220px;
+      grid-template-columns: 220px 220px 220px;
       gap: 12px;
       margin-bottom: 14px;
       align-items: end;
+    }
+
+    .special-filter-wrap {
+      position: relative;
+    }
+
+    .special-filter-btn {
+      width: 100%;
+      text-align: left;
+    }
+
+    .special-filter-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 220px;
+      width: 100%;
+      background: rgba(255,255,255,0.98);
+      border: 1px solid #dbe3ef;
+      border-radius: 14px;
+      box-shadow:
+        0 18px 28px rgba(15, 23, 42, 0.14),
+        inset 0 1px 0 rgba(255,255,255,0.95);
+      padding: 10px;
+      z-index: 600;
+      display: grid;
+      gap: 8px;
+    }
+
+    .special-filter-selected {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 4px;
+      min-height: 10px;
+    }
+
+    .special-tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eef4ff;
+      color: #1d4ed8;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .special-tag-empty {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .special-tags-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      background: #fff;
+      min-height: 48px;
+    }
+
+    .special-tag-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .special-tag-check input {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
     }
 
     .player-list,
@@ -444,6 +528,25 @@
       margin-bottom: 6px;
     }
 
+    .player-special-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .player-special-tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
+      color: #6d28d9;
+      font-weight: 700;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
     .note-box {
       font-size: 13px;
       color: #475569;
@@ -567,14 +670,6 @@
       text-align: center;
       padding: 12px;
       line-height: 1.8;
-    }
-
-    .collapsed-body {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      min-height: 48px;
     }
 
     .constraint-row {
@@ -923,6 +1018,11 @@
 
             <div class="form-grid-note">
               <div>
+                <label>特殊條件（可複選）</label>
+                <div id="specialTagsEditor" class="special-tags-box"></div>
+              </div>
+
+              <div>
                 <label for="note">備註（非必填）</label>
                 <textarea id="note" placeholder="可填寫裝備、分工、角色補充資訊"></textarea>
               </div>
@@ -943,12 +1043,20 @@
               <div>
                 <label for="sortMode">等級排序</label>
                 <select id="sortMode">
-                  <option value="default">預設</option>
+                  <option value="desc" selected>等級由高到低</option>
                   <option value="asc">等級由低到高</option>
-                  <option value="desc">等級由高到低</option>
                 </select>
               </div>
+              <div class="special-filter-wrap">
+                <label>特殊條件篩選</label>
+                <button type="button" class="btn-outline special-filter-btn" id="specialFilterBtn">
+                  特殊條件篩選
+                </button>
+                <div class="special-filter-dropdown" id="specialFilterDropdown" style="display:none;"></div>
+              </div>
             </div>
+
+            <div id="specialFilterSelected" class="special-filter-selected"></div>
 
             <div class="player-list" id="playerList"></div>
           </div>
@@ -969,6 +1077,7 @@
     <div class="info-box">
       第一次從分享連結打開時，預設為唯讀。<br>
       人物可拖拉到右側隊伍，也可用「加入」小選單加入。<br>
+      可為人物設定 a ~ l 特殊條件，並在上方篩選。<br>
       隊伍中的人物可雙擊快速編輯。<br>
       公會截圖匯入會先自動辨識，再讓你手動確認後匯入。<br>
       如果你是房主，請妥善保管編輯密碼。
@@ -1117,6 +1226,8 @@
       "其他"
     ];
 
+    const SPECIAL_TAG_OPTIONS = ["a","b","c","d","e","f","g","h","i","j","k","l"];
+
     const JOB_ALIASES = [
       { canonical: "黑騎士", aliases: ["黑騎士", "黑骑士"] },
       { canonical: "主教", aliases: ["主教"] },
@@ -1160,13 +1271,15 @@
       isEditable: false,
       unsubscribe: null,
       jobFilter: "全部",
-      sortMode: "default",
+      sortMode: "desc",
+      selectedSpecialTags: [],
       importRows: [],
       importRawTexts: [],
       importFiles: [],
       isOcrRunning: false,
       openJoinMenuPlayerId: null,
-      collapsedTeams: {}
+      collapsedTeams: {},
+      specialFilterDropdownOpen: false
     };
 
     const els = {
@@ -1188,6 +1301,10 @@
       note: document.getElementById("note"),
       jobFilter: document.getElementById("jobFilter"),
       sortMode: document.getElementById("sortMode"),
+      specialTagsEditor: document.getElementById("specialTagsEditor"),
+      specialFilterBtn: document.getElementById("specialFilterBtn"),
+      specialFilterDropdown: document.getElementById("specialFilterDropdown"),
+      specialFilterSelected: document.getElementById("specialFilterSelected"),
       savePlayerBtn: document.getElementById("savePlayerBtn"),
       cancelEditBtn: document.getElementById("cancelEditBtn"),
       playerList: document.getElementById("playerList"),
@@ -1226,6 +1343,9 @@
 
     async function bootstrap() {
       initJobOptions();
+      renderSpecialTagsEditor();
+      renderSpecialFilterDropdown();
+      renderSpecialFilterSelected();
       bindEvents();
       await prepareRoom();
       subscribeRoom();
@@ -1255,17 +1375,132 @@
       });
     }
 
+    function renderSpecialTagsEditor() {
+      if (!els.specialTagsEditor) return;
+
+      els.specialTagsEditor.innerHTML = "";
+
+      SPECIAL_TAG_OPTIONS.forEach(tag => {
+        const label = document.createElement("label");
+        label.className = "special-tag-check";
+        label.innerHTML = `
+          <input type="checkbox" value="${tag}" ${!state.isEditable ? "disabled" : ""}>
+          <span>${tag.toUpperCase()}</span>
+        `;
+        els.specialTagsEditor.appendChild(label);
+      });
+    }
+
+    function updateSpecialTagsEditorSelection(tags = []) {
+      if (!els.specialTagsEditor) return;
+      const selected = new Set(tags);
+      els.specialTagsEditor.querySelectorAll("input[type='checkbox']").forEach(input => {
+        input.checked = selected.has(input.value);
+      });
+    }
+
+    function getSelectedFormSpecialTags() {
+      if (!els.specialTagsEditor) return [];
+      return Array.from(els.specialTagsEditor.querySelectorAll("input[type='checkbox']:checked"))
+        .map(input => input.value);
+    }
+
+    function renderSpecialFilterDropdown() {
+      if (!els.specialFilterDropdown) return;
+
+      els.specialFilterDropdown.style.display = state.specialFilterDropdownOpen ? "grid" : "none";
+      els.specialFilterDropdown.innerHTML = "";
+
+      SPECIAL_TAG_OPTIONS.forEach(tag => {
+        const label = document.createElement("label");
+        label.className = "special-tag-check";
+        label.innerHTML = `
+          <input type="checkbox" value="${tag}" ${state.selectedSpecialTags.includes(tag) ? "checked" : ""}>
+          <span>${tag.toUpperCase()}</span>
+        `;
+
+        const checkbox = label.querySelector("input");
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            if (!state.selectedSpecialTags.includes(tag)) {
+              state.selectedSpecialTags.push(tag);
+            }
+          } else {
+            state.selectedSpecialTags = state.selectedSpecialTags.filter(t => t !== tag);
+          }
+          state.selectedSpecialTags.sort();
+          renderSpecialFilterDropdown();
+          renderSpecialFilterSelected();
+          renderPlayers();
+        });
+
+        els.specialFilterDropdown.appendChild(label);
+      });
+
+      const actions = document.createElement("div");
+      actions.className = "inline-actions";
+      actions.style.marginTop = "4px";
+      actions.innerHTML = `
+        <button type="button" class="btn-secondary" id="clearSpecialFilterBtn">清除篩選</button>
+      `;
+      els.specialFilterDropdown.appendChild(actions);
+
+      const clearBtn = document.getElementById("clearSpecialFilterBtn");
+      clearBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        state.selectedSpecialTags = [];
+        renderSpecialFilterDropdown();
+        renderSpecialFilterSelected();
+        renderPlayers();
+      });
+    }
+
+    function renderSpecialFilterSelected() {
+      if (!els.specialFilterSelected) return;
+
+      els.specialFilterSelected.innerHTML = "";
+
+      if (!state.selectedSpecialTags.length) {
+        els.specialFilterSelected.innerHTML = `<div class="special-tag-empty">目前未設定特殊條件篩選</div>`;
+        return;
+      }
+
+      state.selectedSpecialTags.forEach(tag => {
+        const pill = document.createElement("span");
+        pill.className = "special-tag-pill";
+        pill.textContent = tag.toUpperCase();
+        els.specialFilterSelected.appendChild(pill);
+      });
+    }
+
     function bindEvents() {
       document.addEventListener("click", (e) => {
-        if (!state.openJoinMenuPlayerId) return;
+        let needRenderPlayers = false;
 
-        const insideJoinMenu = e.target.closest(".join-menu");
-        const insideJoinButton = e.target.closest("[data-open-join]");
+        if (state.openJoinMenuPlayerId) {
+          const insideJoinMenu = e.target.closest(".join-menu");
+          const insideJoinButton = e.target.closest("[data-open-join]");
 
-        if (insideJoinMenu || insideJoinButton) return;
+          if (!insideJoinMenu && !insideJoinButton) {
+            state.openJoinMenuPlayerId = null;
+            needRenderPlayers = true;
+          }
+        }
 
-        state.openJoinMenuPlayerId = null;
-        renderPlayers();
+        if (state.specialFilterDropdownOpen) {
+          const insideSpecialFilter =
+            e.target.closest("#specialFilterDropdown") ||
+            e.target.closest("#specialFilterBtn");
+
+          if (!insideSpecialFilter) {
+            state.specialFilterDropdownOpen = false;
+            renderSpecialFilterDropdown();
+          }
+        }
+
+        if (needRenderPlayers) {
+          renderPlayers();
+        }
       });
 
       els.copyLinkBtn.addEventListener("click", copyShareLink);
@@ -1288,6 +1523,12 @@
       els.sortMode.addEventListener("change", () => {
         state.sortMode = els.sortMode.value;
         renderPlayers();
+      });
+
+      els.specialFilterBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        state.specialFilterDropdownOpen = !state.specialFilterDropdownOpen;
+        renderSpecialFilterDropdown();
       });
 
       els.modalCancelBtn.addEventListener("click", closePasswordModal);
@@ -1371,6 +1612,15 @@
       return JOB_OPTIONS.includes(value) ? value : "其他";
     }
 
+    function normalizeSpecialTags(tags) {
+      if (!Array.isArray(tags)) return [];
+      return tags
+        .map(tag => String(tag || "").trim().toLowerCase())
+        .filter(tag => SPECIAL_TAG_OPTIONS.includes(tag))
+        .filter((tag, idx, arr) => arr.indexOf(tag) === idx)
+        .sort();
+    }
+
     function normalizeTeams(rawTeams) {
       const validKeys = rawTeams && typeof rawTeams === "object"
         ? Object.keys(rawTeams).filter(k => /^[A-Z]$/.test(k)).sort()
@@ -1412,7 +1662,8 @@
               name: player.name || "",
               level: Number(player.level || 0),
               job: normalizeJob(player.job),
-              note: player.note || ""
+              note: player.note || "",
+              specialTags: normalizeSpecialTags(player.specialTags)
             }))
           : [],
         teams: normalizeTeams(raw.teams),
@@ -1468,10 +1719,6 @@
       return state.data.teams[teamKey].members.length;
     }
 
-    function isTeamFull(teamKey) {
-      return getTeamMemberCount(teamKey) >= TEAM_CAPACITY;
-    }
-
     function updateModeUI() {
       if (state.isEditable) {
         els.modeBadge.className = "mode-badge editable";
@@ -1496,6 +1743,14 @@
       els.importWizardBtn.disabled = disabled;
       els.addTeamBtn.disabled = disabled;
       els.editRoomTitleBtn.disabled = disabled;
+
+      renderSpecialTagsEditor();
+      if (state.editingPlayerId) {
+        const player = getPlayer(state.editingPlayerId);
+        updateSpecialTagsEditorSelection(player?.specialTags || []);
+      } else {
+        updateSpecialTagsEditorSelection([]);
+      }
     }
 
     function getShareUrl() {
@@ -1555,6 +1810,7 @@
     function lockEditing() {
       state.isEditable = false;
       state.openJoinMenuPlayerId = null;
+      state.specialFilterDropdownOpen = false;
       resetForm();
       closePasswordModal();
       closeCloneRoomModal();
@@ -1578,6 +1834,7 @@
       els.job.value = JOB_OPTIONS[0];
       els.savePlayerBtn.textContent = "新增人物";
       els.cancelEditBtn.style.display = "none";
+      updateSpecialTagsEditorSelection([]);
     }
 
     function cancelEdit() {
@@ -1594,6 +1851,7 @@
       els.level.value = player.level;
       els.job.value = normalizeJob(player.job);
       els.note.value = player.note || "";
+      updateSpecialTagsEditorSelection(player.specialTags || []);
       els.savePlayerBtn.textContent = "儲存修改";
       els.cancelEditBtn.style.display = "inline-block";
       els.name.focus();
@@ -1607,6 +1865,7 @@
       const level = Number(els.level.value);
       const job = normalizeJob(els.job.value);
       const note = els.note.value.trim();
+      const specialTags = normalizeSpecialTags(getSelectedFormSpecialTags());
 
       if (!name) return alert("請輸入人物名稱");
       if (!level || level < 1) return alert("請輸入正確等級");
@@ -1621,8 +1880,9 @@
         target.level = level;
         target.job = job;
         target.note = note;
+        target.specialTags = specialTags;
       } else {
-        players.push({ id: uid(), name, level, job, note });
+        players.push({ id: uid(), name, level, job, note, specialTags });
       }
 
       await patchRoom({ players });
@@ -1802,17 +2062,21 @@
 
     function sortPlayers(players) {
       const cloned = [...players];
+
       if (state.sortMode === "asc") {
         cloned.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name, "zh-Hant"));
-      } else if (state.sortMode === "desc") {
+      } else {
         cloned.sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, "zh-Hant"));
       }
+
       return cloned;
     }
 
     function renderAll() {
       if (!state.data) return;
       updateModeUI();
+      renderSpecialFilterDropdown();
+      renderSpecialFilterSelected();
       renderPlayers();
       renderTeams();
     }
@@ -1821,7 +2085,11 @@
       els.playerList.innerHTML = "";
 
       let players = state.data.players.filter(player => {
-        return state.jobFilter === "全部" ? true : normalizeJob(player.job) === state.jobFilter;
+        const jobOk = state.jobFilter === "全部" || normalizeJob(player.job) === state.jobFilter;
+        const tagOk =
+          state.selectedSpecialTags.length === 0 ||
+          (player.specialTags || []).some(tag => state.selectedSpecialTags.includes(tag));
+        return jobOk && tagOk;
       });
 
       players = sortPlayers(players);
@@ -1865,6 +2133,12 @@
               <span>Lv.${player.level}</span>
             </div>
 
+            ${(player.specialTags || []).length
+              ? `<div class="player-special-tags">
+                  ${(player.specialTags || []).map(t => `<span class="player-special-tag">${escapeHtml(String(t).toUpperCase())}</span>`).join("")}
+                 </div>`
+              : ""}
+
             ${player.note
               ? `<div class="note-box">${escapeHtml(player.note)}</div>`
               : `<div class="note-empty">尚未填寫備註</div>`}
@@ -1883,7 +2157,7 @@
           e.stopPropagation();
           if (!state.isEditable) return;
           state.openJoinMenuPlayerId = state.openJoinMenuPlayerId === player.id ? null : player.id;
-          renderPlayers();
+          requestAnimationFrame(renderPlayers);
         });
 
         item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
@@ -1975,9 +2249,9 @@
 
         root.querySelector("[data-rename-team]").addEventListener("click", () => renameTeam(teamKey));
 
-        const deleteBtn = root.querySelector("[data-delete-team]");
-        if (deleteBtn) {
-          deleteBtn.addEventListener("click", () => deleteTeam(teamKey));
+        const deleteBtnCollapsed = root.querySelector("[data-delete-team]");
+        if (deleteBtnCollapsed) {
+          deleteBtnCollapsed.addEventListener("click", () => deleteTeam(teamKey));
         }
 
         root.querySelector("[data-toggle-collapse]").addEventListener("click", () => toggleCollapseTeam(teamKey));
@@ -2079,6 +2353,12 @@
               <div class="meta">
                 <span>Lv.${member.level}</span>
               </div>
+
+              ${(member.specialTags || []).length
+                ? `<div class="player-special-tags">
+                    ${(member.specialTags || []).map(t => `<span class="player-special-tag">${escapeHtml(String(t).toUpperCase())}</span>`).join("")}
+                   </div>`
+                : ""}
 
               ${member.note
                 ? `<div class="note-box">${escapeHtml(member.note)}</div>`
@@ -2211,7 +2491,8 @@
         name: player.name,
         level: player.level,
         job: normalizeJob(player.job),
-        note: player.note || ""
+        note: player.note || "",
+        specialTags: normalizeSpecialTags(player.specialTags)
       }));
 
       await setDoc(newRoomRef, {
@@ -2449,7 +2730,8 @@
           name: String(row.name || "").trim(),
           job: normalizeJob(row.job),
           level: Number(row.level),
-          note: String(row.note || "").trim()
+          note: String(row.note || "").trim(),
+          specialTags: []
         }))
         .filter(row => row.name && row.level > 0);
 
