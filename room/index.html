@@ -126,6 +126,11 @@
       color: #15803d;
     }
 
+    .personal-editable {
+      background: #fff7ed;
+      color: #c2410c;
+    }
+
     .layout {
       display: grid;
       grid-template-columns: 1.15fr 0.85fr;
@@ -389,6 +394,23 @@
       cursor: pointer;
     }
 
+    .inline-checkbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .inline-checkbox input {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
+    }
+
     .player-list,
     .team-members {
       display: grid;
@@ -477,6 +499,10 @@
       border-color: #d7e3f8;
     }
 
+    .player-item.personal-allowed {
+      border-color: #fed7aa;
+    }
+
     .player-item.draggable,
     .member-item.draggable {
       cursor: grab;
@@ -545,6 +571,26 @@
       color: #6d28d9;
       font-weight: 700;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .access-pill {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .access-personal {
+      background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
+      color: #c2410c;
+    }
+
+    .access-owner {
+      background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #475569;
     }
 
     .note-box {
@@ -935,10 +981,7 @@
         padding: 16px;
       }
 
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-
+      .form-grid,
       .list-toolbar {
         grid-template-columns: 1fr;
       }
@@ -976,7 +1019,7 @@
       </div>
     </div>
 
-    <div class="sub">有連結即可看，點選上方「進入編輯模式」並輸入密碼後才能修改。</div>
+    <div class="sub">有連結即可看。房主輸入房間密碼可管理全部；持有人物專屬代碼者可只編輯自己的那張人物卡。</div>
 
     <div class="topbar">
       <div class="status-row">
@@ -989,7 +1032,8 @@
         <button class="btn-outline" id="cloneRoomBtn">保留人物另開房間</button>
         <button class="btn-outline" id="importWizardBtn">從公會截圖匯入</button>
         <button class="btn-secondary" id="unlockBtn">進入編輯模式</button>
-        <button class="btn-secondary" id="lockBtn" style="display:none;">鎖定</button>
+        <button class="btn-secondary" id="lockBtn" style="display:none;">鎖定房主編輯</button>
+        <button class="btn-secondary" id="exitPersonalEditBtn" style="display:none;">離開個人編輯</button>
       </div>
     </div>
 
@@ -999,7 +1043,7 @@
 
         <div class="player-panel">
           <div class="form-card">
-            <div class="section-title">新增人物</div>
+            <div class="section-title">新增 / 編輯人物</div>
 
             <div class="form-grid">
               <div>
@@ -1026,6 +1070,21 @@
                 <label for="note">備註（非必填）</label>
                 <textarea id="note" placeholder="可填寫裝備、分工、角色補充資訊"></textarea>
               </div>
+
+              <div>
+                <label for="personalEditCodeInput">人物專屬代碼（房主設定，可留空）</label>
+                <input id="personalEditCodeInput" type="text" placeholder="新增時可設定；編輯既有人物時留空代表不變更" />
+                <div class="small" id="personalCodeHint" style="margin-top:6px;">
+                  若有設定代碼，持有代碼的人可在不用房間密碼的情況下編輯這張人物卡。
+                </div>
+              </div>
+
+              <div id="clearPersonalCodeWrap" style="display:none;">
+                <label class="inline-checkbox">
+                  <input id="clearPersonalCodeChk" type="checkbox" />
+                  <span>清除此人物的專屬代碼（清空後僅房主可編輯）</span>
+                </label>
+              </div>
             </div>
 
             <div class="inline-actions">
@@ -1049,15 +1108,12 @@
               </div>
               <div class="special-filter-wrap">
                 <label>特殊條件篩選</label>
-                <button type="button" class="btn-outline special-filter-btn" id="specialFilterBtn">
-                  特殊條件篩選
-                </button>
+                <button type="button" class="btn-outline special-filter-btn" id="specialFilterBtn">特殊條件篩選</button>
                 <div class="special-filter-dropdown" id="specialFilterDropdown" style="display:none;"></div>
               </div>
             </div>
 
             <div id="specialFilterSelected" class="special-filter-selected"></div>
-
             <div class="player-list" id="playerList"></div>
           </div>
         </div>
@@ -1076,18 +1132,18 @@
 
     <div class="info-box">
       第一次從分享連結打開時，預設為唯讀。<br>
+      房主輸入房間密碼後可新增、刪除、設定人物專屬代碼與管理隊伍。<br>
       人物可拖拉到右側隊伍，也可用「加入」小選單加入。<br>
-      可為人物設定 a ~ l 特殊條件，並在上方篩選。<br>
-      隊伍中的人物可雙擊快速編輯。<br>
-      公會截圖匯入會先自動辨識，再讓你手動確認後匯入。<br>
-      如果你是房主，請妥善保管編輯密碼。
+      若人物有設定專屬代碼，持有代碼的人可點「個人編輯」並只修改自己的那張人物卡。<br>
+      公會截圖匯入會先自動辨識，再讓你手動確認後匯入。
     </div>
   </div>
 
+  <!-- 房間密碼 -->
   <div class="modal-backdrop" id="passwordModal">
     <div class="modal modal-sm">
       <div class="modal-title">輸入編輯密碼</div>
-      <div class="modal-desc">驗證成功後，才能新增、修改、刪除、拖拉與變更限制。</div>
+      <div class="modal-desc">驗證成功後，才能新增、刪除、隊伍管理、設定人物專屬代碼與修改所有人物。</div>
       <input id="modalPasswordInput" type="password" placeholder="請輸入編輯密碼" />
       <div class="modal-error" id="modalError">密碼錯誤</div>
       <div class="modal-actions">
@@ -1097,12 +1153,28 @@
     </div>
   </div>
 
+  <!-- 人物個人編輯代碼 -->
+  <div class="modal-backdrop" id="personalEditModal">
+    <div class="modal modal-sm">
+      <div class="modal-title">輸入人物專屬代碼</div>
+      <div class="modal-desc" id="personalEditModalDesc">驗證成功後，只能編輯這一張人物卡。</div>
+      <input id="personalEditCodeVerifyInput" type="password" placeholder="請輸入人物專屬代碼" />
+      <div class="modal-error" id="personalEditModalError">代碼錯誤</div>
+      <div class="modal-actions">
+        <button class="btn-outline" id="personalEditCancelBtn">取消</button>
+        <button class="btn-primary" id="personalEditConfirmBtn">開始個人編輯</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 保留人物另開新房間 -->
   <div class="modal-backdrop" id="cloneRoomModal">
     <div class="modal modal-sm">
       <div class="modal-title">保留人物資料庫另開新房間</div>
       <div class="modal-desc">
         會複製目前的人物資料庫。<br>
-        新房間的隊伍會清空，限制會回到預設。
+        新房間的隊伍會清空，限制會回到預設。<br>
+        人物專屬代碼也會一起保留。
       </div>
 
       <div class="modal-grid">
@@ -1129,6 +1201,7 @@
     </div>
   </div>
 
+  <!-- OCR -->
   <div class="modal-backdrop" id="importWizardModal">
     <div class="modal">
       <div class="modal-title">從公會截圖匯入</div>
@@ -1269,6 +1342,8 @@
       draggingPlayerId: null,
       editingPlayerId: null,
       isEditable: false,
+      personalEditPlayerId: null,
+      personalEditTargetPlayerId: null,
       unsubscribe: null,
       jobFilter: "全部",
       sortMode: "desc",
@@ -1293,12 +1368,18 @@
       importWizardBtn: document.getElementById("importWizardBtn"),
       unlockBtn: document.getElementById("unlockBtn"),
       lockBtn: document.getElementById("lockBtn"),
+      exitPersonalEditBtn: document.getElementById("exitPersonalEditBtn"),
       addTeamBtn: document.getElementById("addTeamBtn"),
 
       name: document.getElementById("name"),
       level: document.getElementById("level"),
       job: document.getElementById("job"),
       note: document.getElementById("note"),
+      personalEditCodeInput: document.getElementById("personalEditCodeInput"),
+      personalCodeHint: document.getElementById("personalCodeHint"),
+      clearPersonalCodeWrap: document.getElementById("clearPersonalCodeWrap"),
+      clearPersonalCodeChk: document.getElementById("clearPersonalCodeChk"),
+
       jobFilter: document.getElementById("jobFilter"),
       sortMode: document.getElementById("sortMode"),
       specialTagsEditor: document.getElementById("specialTagsEditor"),
@@ -1315,6 +1396,13 @@
       modalError: document.getElementById("modalError"),
       modalCancelBtn: document.getElementById("modalCancelBtn"),
       modalConfirmBtn: document.getElementById("modalConfirmBtn"),
+
+      personalEditModal: document.getElementById("personalEditModal"),
+      personalEditModalDesc: document.getElementById("personalEditModalDesc"),
+      personalEditCodeVerifyInput: document.getElementById("personalEditCodeVerifyInput"),
+      personalEditModalError: document.getElementById("personalEditModalError"),
+      personalEditCancelBtn: document.getElementById("personalEditCancelBtn"),
+      personalEditConfirmBtn: document.getElementById("personalEditConfirmBtn"),
 
       cloneRoomModal: document.getElementById("cloneRoomModal"),
       cloneTitle: document.getElementById("cloneTitle"),
@@ -1379,12 +1467,11 @@
       if (!els.specialTagsEditor) return;
 
       els.specialTagsEditor.innerHTML = "";
-
       SPECIAL_TAG_OPTIONS.forEach(tag => {
         const label = document.createElement("label");
         label.className = "special-tag-check";
         label.innerHTML = `
-          <input type="checkbox" value="${tag}" ${!state.isEditable ? "disabled" : ""}>
+          <input type="checkbox" value="${tag}" ${!canUseForm() ? "disabled" : ""}>
           <span>${tag.toUpperCase()}</span>
         `;
         els.specialTagsEditor.appendChild(label);
@@ -1440,13 +1527,10 @@
       const actions = document.createElement("div");
       actions.className = "inline-actions";
       actions.style.marginTop = "4px";
-      actions.innerHTML = `
-        <button type="button" class="btn-secondary" id="clearSpecialFilterBtn">清除篩選</button>
-      `;
+      actions.innerHTML = `<button type="button" class="btn-secondary" id="clearSpecialFilterBtn">清除篩選</button>`;
       els.specialFilterDropdown.appendChild(actions);
 
-      const clearBtn = document.getElementById("clearSpecialFilterBtn");
-      clearBtn.addEventListener("click", (e) => {
+      document.getElementById("clearSpecialFilterBtn").addEventListener("click", (e) => {
         e.stopPropagation();
         state.selectedSpecialTags = [];
         renderSpecialFilterDropdown();
@@ -1480,7 +1564,6 @@
         if (state.openJoinMenuPlayerId) {
           const insideJoinMenu = e.target.closest(".join-menu");
           const insideJoinButton = e.target.closest("[data-open-join]");
-
           if (!insideJoinMenu && !insideJoinButton) {
             state.openJoinMenuPlayerId = null;
             needRenderPlayers = true;
@@ -1498,9 +1581,7 @@
           }
         }
 
-        if (needRenderPlayers) {
-          renderPlayers();
-        }
+        if (needRenderPlayers) renderPlayers();
       });
 
       els.copyLinkBtn.addEventListener("click", copyShareLink);
@@ -1511,6 +1592,7 @@
       els.importWizardBtn.addEventListener("click", openImportWizardModal);
       els.unlockBtn.addEventListener("click", openPasswordModal);
       els.lockBtn.addEventListener("click", lockEditing);
+      els.exitPersonalEditBtn.addEventListener("click", exitPersonalEdit);
       els.addTeamBtn.addEventListener("click", addTeam);
       els.editRoomTitleBtn.addEventListener("click", renameRoomTitle);
 
@@ -1524,7 +1606,6 @@
         state.sortMode = els.sortMode.value;
         renderPlayers();
       });
-
       els.specialFilterBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         state.specialFilterDropdownOpen = !state.specialFilterDropdownOpen;
@@ -1538,6 +1619,15 @@
       });
       els.modalPasswordInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") verifyPasswordFromModal();
+      });
+
+      els.personalEditCancelBtn.addEventListener("click", closePersonalEditModal);
+      els.personalEditConfirmBtn.addEventListener("click", verifyPersonalEditCodeFromModal);
+      els.personalEditModal.addEventListener("click", (e) => {
+        if (e.target === els.personalEditModal) closePersonalEditModal();
+      });
+      els.personalEditCodeVerifyInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") verifyPersonalEditCodeFromModal();
       });
 
       els.cloneCancelBtn.addEventListener("click", closeCloneRoomModal);
@@ -1663,7 +1753,8 @@
               level: Number(player.level || 0),
               job: normalizeJob(player.job),
               note: player.note || "",
-              specialTags: normalizeSpecialTags(player.specialTags)
+              specialTags: normalizeSpecialTags(player.specialTags),
+              personalEditCodeHash: typeof player.personalEditCodeHash === "string" ? player.personalEditCodeHash : ""
             }))
           : [],
         teams: normalizeTeams(raw.teams),
@@ -1715,34 +1806,63 @@
       return state.data.players.find(p => p.id === playerId);
     }
 
-    function getTeamMemberCount(teamKey) {
-      return state.data.teams[teamKey].members.length;
+    function canUsePersonalEditByPlayer(player) {
+      return typeof player?.personalEditCodeHash === "string" && player.personalEditCodeHash.length > 0;
+    }
+
+    function canCreatePlayer() {
+      return state.isEditable;
+    }
+
+    function canEditPlayer(playerId) {
+      return state.isEditable || state.personalEditPlayerId === playerId;
+    }
+
+    function canDeletePlayer() {
+      return state.isEditable;
+    }
+
+    function canUseForm() {
+      return state.isEditable || !!state.personalEditPlayerId;
     }
 
     function updateModeUI() {
       if (state.isEditable) {
         els.modeBadge.className = "mode-badge editable";
-        els.modeBadge.textContent = "🟢 編輯模式";
+        els.modeBadge.textContent = "🟢 房主編輯模式";
         els.unlockBtn.style.display = "none";
         els.lockBtn.style.display = "inline-block";
+        els.exitPersonalEditBtn.style.display = "none";
+      } else if (state.personalEditPlayerId) {
+        const p = getPlayer(state.personalEditPlayerId);
+        els.modeBadge.className = "mode-badge personal-editable";
+        els.modeBadge.textContent = `🟠 個人編輯模式${p ? "｜" + p.name : ""}`;
+        els.unlockBtn.style.display = "inline-block";
+        els.lockBtn.style.display = "none";
+        els.exitPersonalEditBtn.style.display = "inline-block";
       } else {
         els.modeBadge.className = "mode-badge readonly";
         els.modeBadge.textContent = "🔵 唯讀模式";
         els.unlockBtn.style.display = "inline-block";
         els.lockBtn.style.display = "none";
+        els.exitPersonalEditBtn.style.display = "none";
       }
 
-      const disabled = !state.isEditable;
-      els.name.disabled = disabled;
-      els.level.disabled = disabled;
-      els.job.disabled = disabled;
-      els.note.disabled = disabled;
-      els.savePlayerBtn.disabled = disabled;
-      els.cancelEditBtn.disabled = disabled;
-      els.cloneRoomBtn.disabled = disabled;
-      els.importWizardBtn.disabled = disabled;
-      els.addTeamBtn.disabled = disabled;
-      els.editRoomTitleBtn.disabled = disabled;
+      const formDisabled = !canUseForm();
+      els.name.disabled = formDisabled;
+      els.level.disabled = formDisabled;
+      els.job.disabled = formDisabled;
+      els.note.disabled = formDisabled;
+      els.savePlayerBtn.disabled = formDisabled;
+      els.cancelEditBtn.disabled = formDisabled;
+
+      els.cloneRoomBtn.disabled = !state.isEditable;
+      els.importWizardBtn.disabled = !state.isEditable;
+      els.addTeamBtn.disabled = !state.isEditable;
+      els.editRoomTitleBtn.disabled = !state.isEditable;
+
+      els.personalEditCodeInput.disabled = !state.isEditable;
+      els.clearPersonalCodeChk.disabled = !state.isEditable;
 
       renderSpecialTagsEditor();
       if (state.editingPlayerId) {
@@ -1750,6 +1870,23 @@
         updateSpecialTagsEditorSelection(player?.specialTags || []);
       } else {
         updateSpecialTagsEditorSelection([]);
+      }
+
+      const tagsDisabled = formDisabled;
+      els.specialTagsEditor.querySelectorAll("input[type='checkbox']").forEach(input => {
+        input.disabled = tagsDisabled;
+      });
+
+      if (!state.isEditable) {
+        els.personalEditCodeInput.placeholder = "僅房主可設定或修改人物專屬代碼";
+        els.personalCodeHint.textContent = state.personalEditPlayerId
+          ? "目前是個人編輯模式。你可以修改這張人物卡，但不能查看、設定或清除專屬代碼。"
+          : "僅房主可設定人物專屬代碼。";
+      } else {
+        els.personalEditCodeInput.placeholder = state.editingPlayerId
+          ? "留空 = 不變更；輸入新代碼 = 覆蓋原本代碼"
+          : "新增時可設定，留空代表不開啟個人編輯";
+        els.personalCodeHint.textContent = "若有設定代碼，持有代碼的人可在不用房間密碼的情況下編輯這張人物卡。";
       }
     }
 
@@ -1802,28 +1939,31 @@
       }
 
       state.isEditable = true;
+      state.personalEditPlayerId = null;
       closePasswordModal();
       renderAll();
-      alert("已進入編輯模式");
+      alert("已進入房主編輯模式");
     }
 
     function lockEditing() {
       state.isEditable = false;
+      state.personalEditPlayerId = null;
       state.openJoinMenuPlayerId = null;
       state.specialFilterDropdownOpen = false;
       resetForm();
       closePasswordModal();
+      closePersonalEditModal();
       closeCloneRoomModal();
       closeImportWizardModal();
       renderAll();
     }
 
-    function requireEditable() {
+    function exitPersonalEdit() {
+      state.personalEditPlayerId = null;
       if (!state.isEditable) {
-        alert("目前是唯讀模式，請先點上方「進入編輯模式」並輸入密碼。");
-        return false;
+        resetForm();
       }
-      return true;
+      renderAll();
     }
 
     function resetForm() {
@@ -1832,19 +1972,27 @@
       els.level.value = "";
       els.note.value = "";
       els.job.value = JOB_OPTIONS[0];
-      els.savePlayerBtn.textContent = "新增人物";
-      els.cancelEditBtn.style.display = "none";
+      els.personalEditCodeInput.value = "";
+      els.clearPersonalCodeChk.checked = false;
+      els.clearPersonalCodeWrap.style.display = "none";
+      els.savePlayerBtn.textContent = canCreatePlayer() ? "新增人物" : "儲存修改";
+      els.cancelEditBtn.style.display = canUseForm() ? "inline-block" : "none";
       updateSpecialTagsEditorSelection([]);
     }
 
     function cancelEdit() {
-      resetForm();
-      renderAll();
+      if (state.personalEditPlayerId && !state.isEditable) {
+        fillEditForm(state.personalEditPlayerId);
+      } else {
+        resetForm();
+        renderAll();
+      }
     }
 
     function fillEditForm(playerId) {
       const player = getPlayer(playerId);
       if (!player) return;
+      if (!canEditPlayer(playerId)) return;
 
       state.editingPlayerId = playerId;
       els.name.value = player.name;
@@ -1852,14 +2000,87 @@
       els.job.value = normalizeJob(player.job);
       els.note.value = player.note || "";
       updateSpecialTagsEditorSelection(player.specialTags || []);
+
+      els.personalEditCodeInput.value = "";
+      els.clearPersonalCodeChk.checked = false;
+
+      if (state.isEditable && canUsePersonalEditByPlayer(player)) {
+        els.clearPersonalCodeWrap.style.display = "block";
+      } else {
+        els.clearPersonalCodeWrap.style.display = "none";
+      }
+
       els.savePlayerBtn.textContent = "儲存修改";
       els.cancelEditBtn.style.display = "inline-block";
       els.name.focus();
       window.scrollTo({ top: 0, behavior: "smooth" });
+      updateModeUI();
+    }
+
+    function openPersonalEditModal(playerId) {
+      const player = getPlayer(playerId);
+      if (!player) return;
+      if (!canUsePersonalEditByPlayer(player)) {
+        alert("這張人物卡尚未設定專屬代碼，目前只能由房主編輯。");
+        return;
+      }
+
+      state.personalEditTargetPlayerId = playerId;
+      els.personalEditCodeVerifyInput.value = "";
+      els.personalEditModalError.textContent = "代碼錯誤";
+      els.personalEditModalError.classList.remove("show");
+      els.personalEditModalDesc.textContent = `輸入「${player.name}」的人物專屬代碼，驗證成功後只能編輯這一張人物卡。`;
+      els.personalEditModal.classList.add("show");
+      setTimeout(() => els.personalEditCodeVerifyInput.focus(), 30);
+    }
+
+    function closePersonalEditModal() {
+      els.personalEditModal.classList.remove("show");
+      els.personalEditCodeVerifyInput.value = "";
+      els.personalEditModalError.classList.remove("show");
+      state.personalEditTargetPlayerId = null;
+    }
+
+    async function verifyPersonalEditCodeFromModal() {
+      const playerId = state.personalEditTargetPlayerId;
+      const player = getPlayer(playerId);
+      if (!player) return;
+
+      const inputCode = els.personalEditCodeVerifyInput.value.trim();
+      if (!inputCode) {
+        els.personalEditModalError.textContent = "請輸入代碼";
+        els.personalEditModalError.classList.add("show");
+        return;
+      }
+
+      if (!canUsePersonalEditByPlayer(player)) {
+        els.personalEditModalError.textContent = "這張人物卡尚未設定專屬代碼";
+        els.personalEditModalError.classList.add("show");
+        return;
+      }
+
+      const inputHash = await sha256(inputCode);
+      if (inputHash !== player.personalEditCodeHash) {
+        els.personalEditModalError.textContent = "代碼錯誤";
+        els.personalEditModalError.classList.add("show");
+        return;
+      }
+
+      state.personalEditPlayerId = playerId;
+      closePersonalEditModal();
+      fillEditForm(playerId);
+      renderAll();
+      alert(`已進入「${player.name}」的個人編輯模式`);
     }
 
     async function savePlayer() {
-      if (!requireEditable()) return;
+      const isOwner = state.isEditable;
+      const isPersonalEditing = !!state.personalEditPlayerId;
+
+      if (!isOwner && !isPersonalEditing) {
+        alert("目前沒有可用的編輯權限。");
+        return;
+      }
 
       const name = els.name.value.trim();
       const level = Number(els.level.value);
@@ -1874,23 +2095,61 @@
       const players = [...state.data.players];
 
       if (state.editingPlayerId) {
+        if (!canEditPlayer(state.editingPlayerId)) {
+          alert("你目前只能編輯自己的那張人物卡。");
+          return;
+        }
+
         const target = players.find(p => p.id === state.editingPlayerId);
         if (!target) return;
+
         target.name = name;
         target.level = level;
         target.job = job;
         target.note = note;
         target.specialTags = specialTags;
+
+        if (isOwner) {
+          if (els.clearPersonalCodeChk.checked) {
+            target.personalEditCodeHash = "";
+          } else {
+            const codeInput = els.personalEditCodeInput.value.trim();
+            if (codeInput) {
+              target.personalEditCodeHash = await sha256(codeInput);
+            }
+          }
+        }
       } else {
-        players.push({ id: uid(), name, level, job, note, specialTags });
+        if (!isOwner) {
+          alert("只有房主可以新增人物。");
+          return;
+        }
+
+        const codeInput = els.personalEditCodeInput.value.trim();
+        const personalEditCodeHash = codeInput ? await sha256(codeInput) : "";
+
+        players.push({
+          id: uid(),
+          name,
+          level,
+          job,
+          note,
+          specialTags,
+          personalEditCodeHash
+        });
       }
 
       await patchRoom({ players });
-      resetForm();
+
+      if (state.personalEditPlayerId && !state.isEditable) {
+        fillEditForm(state.personalEditPlayerId);
+      } else {
+        resetForm();
+      }
     }
 
     async function removePlayer(playerId) {
-      if (!requireEditable()) return;
+      if (!canDeletePlayer()) return;
 
       const players = state.data.players.filter(p => p.id !== playerId);
       const teams = structuredClone(state.data.teams);
@@ -1902,10 +2161,11 @@
       await patchRoom({ players, teams });
 
       if (state.editingPlayerId === playerId) resetForm();
+      if (state.personalEditPlayerId === playerId) state.personalEditPlayerId = null;
     }
 
     async function moveToTeam(playerId, teamKey) {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
       if (!state.data.teams[teamKey]) return;
 
       const teams = structuredClone(state.data.teams);
@@ -1929,7 +2189,7 @@
     }
 
     async function removeFromTeam(playerId, teamKey) {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       const teams = structuredClone(state.data.teams);
       teams[teamKey].members = teams[teamKey].members.filter(id => id !== playerId);
@@ -1937,7 +2197,7 @@
     }
 
     async function addConstraint(teamKey) {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       const teams = structuredClone(state.data.teams);
       teams[teamKey].constraints.push({ id: uid(), job: "黑騎士", min: 1 });
@@ -1945,7 +2205,7 @@
     }
 
     async function updateConstraint(teamKey, constraintId, field, value) {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       const teams = structuredClone(state.data.teams);
       const target = teams[teamKey].constraints.find(c => c.id === constraintId);
@@ -1956,7 +2216,7 @@
     }
 
     async function removeConstraint(teamKey, constraintId) {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       const teams = structuredClone(state.data.teams);
       teams[teamKey].constraints = teams[teamKey].constraints.filter(c => c.id !== constraintId);
@@ -1964,7 +2224,7 @@
     }
 
     async function addTeam() {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       const nextKey = getNextTeamKey();
       if (!nextKey) {
@@ -1979,7 +2239,7 @@
     }
 
     async function renameTeam(teamKey) {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       const current = state.data.teams[teamKey]?.name || defaultTeamName(teamKey);
       const name = prompt("請輸入新的隊伍名稱", current);
@@ -1997,7 +2257,7 @@
     }
 
     async function deleteTeam(teamKey) {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       if (teamKey === "A" || teamKey === "B") {
         alert("A 隊伍與 B 隊伍為預設固定隊伍，不能刪除。");
@@ -2007,9 +2267,7 @@
       const team = state.data.teams[teamKey];
       if (!team) return;
 
-      const ok = confirm(
-        `確定要刪除「${team.name}」嗎？\n\n此隊伍內的成員會從隊伍中移除，回到未編隊狀態。`
-      );
+      const ok = confirm(`確定要刪除「${team.name}」嗎？\n\n此隊伍內的成員會從隊伍中移除，回到未編隊狀態。`);
       if (!ok) return;
 
       const teams = structuredClone(state.data.teams);
@@ -2020,7 +2278,7 @@
     }
 
     async function renameRoomTitle() {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       const current = state.data?.title || "組隊小工具";
       const title = prompt("請輸入新的房間名稱", current);
@@ -2062,13 +2320,11 @@
 
     function sortPlayers(players) {
       const cloned = [...players];
-
       if (state.sortMode === "asc") {
         cloned.sort((a, b) => a.level - b.level || a.name.localeCompare(b.name, "zh-Hant"));
       } else {
         cloned.sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, "zh-Hant"));
       }
-
       return cloned;
     }
 
@@ -2101,22 +2357,21 @@
 
       players.forEach(player => {
         const assigned = getAssignedTeam(player.id);
+        const canPersonal = canUsePersonalEditByPlayer(player);
+        const canEditThis = canEditPlayer(player.id);
         const item = document.createElement("div");
         item.className =
           "player-item" +
           (assigned ? " assigned" : "") +
           (state.isEditable ? " draggable" : "") +
-          (state.openJoinMenuPlayerId === player.id ? " menu-open" : "");
+          (state.openJoinMenuPlayerId === player.id ? " menu-open" : "") +
+          (canPersonal ? " personal-allowed" : "");
         item.draggable = state.isEditable;
 
-        item.addEventListener("click", (e) => {
-          e.stopPropagation();
-        });
-
+        item.addEventListener("click", (e) => e.stopPropagation());
         item.addEventListener("dragstart", () => {
           if (state.isEditable) state.draggingPlayerId = player.id;
         });
-
         item.addEventListener("dragend", () => {
           state.draggingPlayerId = null;
         });
@@ -2127,6 +2382,9 @@
               <div class="player-name">${escapeHtml(player.name)}</div>
               <span class="job-badge">${escapeHtml(normalizeJob(player.job))}</span>
               <span class="tag">${assigned ? "已編入 " + escapeHtml(state.data.teams[assigned]?.name || assigned) : "可加入隊伍"}</span>
+              <span class="access-pill ${canPersonal ? "access-personal" : "access-owner"}">
+                ${canPersonal ? "可個人編輯" : "僅房主可編輯"}
+              </span>
             </div>
 
             <div class="meta">
@@ -2146,8 +2404,11 @@
 
           <div class="actions">
             <button class="btn-outline" data-open-join ${!state.isEditable ? "disabled" : ""}>加入</button>
-            <button class="btn-secondary" data-edit ${!state.isEditable ? "disabled" : ""}>修改</button>
-            <button class="btn-danger" data-delete ${!state.isEditable ? "disabled" : ""}>刪除</button>
+            <button class="btn-secondary" data-edit ${!canEditThis ? "disabled" : ""}>修改</button>
+            <button class="btn-danger" data-delete ${!canDeletePlayer() ? "disabled" : ""}>刪除</button>
+            ${canPersonal && !state.isEditable
+              ? `<button class="btn-outline" data-personal-edit>${state.personalEditPlayerId === player.id ? "已解鎖" : "個人編輯"}</button>`
+              : ""}
             ${state.openJoinMenuPlayerId === player.id ? `<div class="join-menu" data-join-menu></div>` : ""}
           </div>
         `;
@@ -2163,6 +2424,11 @@
         item.querySelector("[data-edit]").addEventListener("click", () => fillEditForm(player.id));
         item.querySelector("[data-delete]").addEventListener("click", () => removePlayer(player.id));
 
+        const personalBtn = item.querySelector("[data-personal-edit]");
+        if (personalBtn) {
+          personalBtn.addEventListener("click", () => openPersonalEditModal(player.id));
+        }
+
         if (state.openJoinMenuPlayerId === player.id) {
           const menu = item.querySelector("[data-join-menu]");
           renderJoinMenu(menu, player.id);
@@ -2173,9 +2439,7 @@
     }
 
     function renderJoinMenu(menuEl, playerId) {
-      menuEl.addEventListener("click", (e) => {
-        e.stopPropagation();
-      });
+      menuEl.addEventListener("click", (e) => e.stopPropagation());
 
       const currentTeam = getAssignedTeam(playerId);
       const keys = getTeamKeys();
@@ -2200,7 +2464,6 @@
           if (sameTeam || full) return;
           moveToTeam(playerId, teamKey);
         });
-
         menuEl.appendChild(btn);
       });
     }
@@ -2248,12 +2511,8 @@
         `;
 
         root.querySelector("[data-rename-team]").addEventListener("click", () => renameTeam(teamKey));
-
         const deleteBtnCollapsed = root.querySelector("[data-delete-team]");
-        if (deleteBtnCollapsed) {
-          deleteBtnCollapsed.addEventListener("click", () => deleteTeam(teamKey));
-        }
-
+        if (deleteBtnCollapsed) deleteBtnCollapsed.addEventListener("click", () => deleteTeam(teamKey));
         root.querySelector("[data-toggle-collapse]").addEventListener("click", () => toggleCollapseTeam(teamKey));
         return;
       }
@@ -2292,26 +2551,19 @@
       `;
 
       root.querySelector("[data-rename-team]").addEventListener("click", () => renameTeam(teamKey));
-
       const deleteBtn = root.querySelector("[data-delete-team]");
-      if (deleteBtn) {
-        deleteBtn.addEventListener("click", () => deleteTeam(teamKey));
-      }
-
+      if (deleteBtn) deleteBtn.addEventListener("click", () => deleteTeam(teamKey));
       root.querySelector("[data-toggle-collapse]").addEventListener("click", () => toggleCollapseTeam(teamKey));
 
       const drop = root.querySelector(`#drop-${teamKey}`);
-
       if (isEditable) {
         drop.addEventListener("dragover", (e) => {
           e.preventDefault();
           drop.classList.add("drag-over");
         });
-
         drop.addEventListener("dragleave", () => {
           drop.classList.remove("drag-over");
         });
-
         drop.addEventListener("drop", (e) => {
           e.preventDefault();
           drop.classList.remove("drag-over");
@@ -2335,11 +2587,12 @@
             row.addEventListener("dragstart", () => {
               state.draggingPlayerId = member.id;
             });
-
             row.addEventListener("dragend", () => {
               state.draggingPlayerId = null;
             });
+          }
 
+          if (canEditPlayer(member.id)) {
             row.addEventListener("dblclick", () => fillEditForm(member.id));
           }
 
@@ -2352,6 +2605,9 @@
 
               <div class="meta">
                 <span>Lv.${member.level}</span>
+                <span class="access-pill ${canUsePersonalEditByPlayer(member) ? "access-personal" : "access-owner"}">
+                  ${canUsePersonalEditByPlayer(member) ? "可個人編輯" : "僅房主可編輯"}
+                </span>
               </div>
 
               ${(member.specialTags || []).length
@@ -2366,7 +2622,7 @@
             </div>
 
             <div class="actions">
-              <button class="btn-secondary" data-edit-team ${!isEditable ? "disabled" : ""}>修改</button>
+              <button class="btn-secondary" data-edit-team ${!canEditPlayer(member.id) ? "disabled" : ""}>修改</button>
               <button class="btn-secondary" data-remove-team ${!isEditable ? "disabled" : ""}>移出</button>
             </div>
           `;
@@ -2434,7 +2690,7 @@
     }
 
     function openCloneRoomModal() {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       els.cloneTitle.value = `${state.data.title || "組隊小工具"} - 副本`;
       els.cloneSlug.value = "";
@@ -2451,48 +2707,32 @@
     }
 
     async function createClonedRoom() {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       const title = els.cloneTitle.value.trim();
       const slug = els.cloneSlug.value.trim();
       const password = els.clonePassword.value.trim();
 
-      if (!title) {
-        showCloneError("請輸入房間名稱");
-        return;
-      }
-      if (!slug) {
-        showCloneError("請輸入 slug");
-        return;
-      }
-      if (!password) {
-        showCloneError("請輸入密碼");
-        return;
-      }
+      if (!title) return showCloneError("請輸入房間名稱");
+      if (!slug) return showCloneError("請輸入 slug");
+      if (!password) return showCloneError("請輸入密碼");
 
       const safeSlug = slug.toLowerCase().replace(/[^a-z0-9-_]/g, "-");
-      if (!safeSlug) {
-        showCloneError("slug 格式不正確，請使用英數、- 或 _");
-        return;
-      }
+      if (!safeSlug) return showCloneError("slug 格式不正確，請使用英數、- 或 _");
 
       const newRoomRef = getRoomRef(safeSlug);
       const existing = await getDoc(newRoomRef);
-
-      if (existing.exists()) {
-        showCloneError("此 slug 已存在，請更換");
-        return;
-      }
+      if (existing.exists()) return showCloneError("此 slug 已存在，請更換");
 
       const passwordHash = await sha256(password);
-
       const clonedPlayers = state.data.players.map(player => ({
         id: uid(),
         name: player.name,
         level: player.level,
         job: normalizeJob(player.job),
         note: player.note || "",
-        specialTags: normalizeSpecialTags(player.specialTags)
+        specialTags: normalizeSpecialTags(player.specialTags),
+        personalEditCodeHash: player.personalEditCodeHash || ""
       }));
 
       await setDoc(newRoomRef, {
@@ -2520,7 +2760,7 @@
     }
 
     function openImportWizardModal() {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       state.importRows = [];
       state.importRawTexts = [];
@@ -2547,7 +2787,7 @@
     }
 
     async function startGuildScreenshotOCR() {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
       if (state.isOcrRunning) return;
 
       const files = Array.from(els.importImageInput.files || []);
@@ -2578,10 +2818,7 @@
           });
 
           const rawText = (result?.data?.text || "").trim();
-          state.importRawTexts.push({
-            fileName: file.name,
-            text: rawText
-          });
+          state.importRawTexts.push({ fileName: file.name, text: rawText });
 
           const parsedRows = parseGuildScreenshotText(rawText);
           parsedRows.forEach(row => {
@@ -2646,9 +2883,7 @@
         const nameInput = document.createElement("input");
         nameInput.value = row.name;
         nameInput.placeholder = "名稱";
-        nameInput.addEventListener("input", (e) => {
-          row.name = e.target.value;
-        });
+        nameInput.addEventListener("input", (e) => { row.name = e.target.value; });
         tdName.appendChild(nameInput);
 
         const tdJob = document.createElement("td");
@@ -2660,9 +2895,7 @@
           if (normalizeJob(row.job) === job) option.selected = true;
           jobSelect.appendChild(option);
         });
-        jobSelect.addEventListener("change", (e) => {
-          row.job = normalizeJob(e.target.value);
-        });
+        jobSelect.addEventListener("change", (e) => { row.job = normalizeJob(e.target.value); });
         tdJob.appendChild(jobSelect);
 
         const tdLevel = document.createElement("td");
@@ -2671,18 +2904,14 @@
         levelInput.min = "1";
         levelInput.value = row.level;
         levelInput.placeholder = "等級";
-        levelInput.addEventListener("input", (e) => {
-          row.level = e.target.value;
-        });
+        levelInput.addEventListener("input", (e) => { row.level = e.target.value; });
         tdLevel.appendChild(levelInput);
 
         const tdNote = document.createElement("td");
         const noteInput = document.createElement("textarea");
         noteInput.placeholder = "備註（非必填）";
         noteInput.value = row.note || "";
-        noteInput.addEventListener("input", (e) => {
-          row.note = e.target.value;
-        });
+        noteInput.addEventListener("input", (e) => { row.note = e.target.value; });
         tdNote.appendChild(noteInput);
 
         const tdDelete = document.createElement("td");
@@ -2722,7 +2951,7 @@
     }
 
     async function importRowsToDatabase() {
-      if (!requireEditable()) return;
+      if (!state.isEditable) return;
 
       const validRows = state.importRows
         .map(row => ({
@@ -2731,7 +2960,8 @@
           job: normalizeJob(row.job),
           level: Number(row.level),
           note: String(row.note || "").trim(),
-          specialTags: []
+          specialTags: [],
+          personalEditCodeHash: ""
         }))
         .filter(row => row.name && row.level > 0);
 
@@ -2861,7 +3091,6 @@
     function parseSingleLineRow(line) {
       const job = detectJob(line);
       const level = extractLevel(line);
-
       if (!job || !level) return null;
 
       const roleWords = ["公會成員", "副公會長", "公會長"];
@@ -2893,7 +3122,6 @@
         const level = Number(row.level);
 
         if (!name || !job || !level) return;
-
         const key = `${name}|${job}|${level}`;
         if (!map.has(key)) {
           map.set(key, { name, job, level, note: "" });
