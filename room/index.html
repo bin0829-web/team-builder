@@ -414,8 +414,15 @@
     .player-list,
     .team-members {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
+    }
+
+    .player-list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .team-members {
+      grid-template-columns: repeat(2, minmax(150px, 1fr));
     }
 
     .player-list {
@@ -964,9 +971,12 @@
     }
 
     @media (max-width: 1280px) {
-      .player-list,
-      .team-members {
+      .player-list {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .team-members {
+        grid-template-columns: repeat(2, minmax(150px, 1fr));
       }
     }
 
