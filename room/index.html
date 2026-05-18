@@ -304,7 +304,7 @@
 
     .list-toolbar {
       display: grid;
-      grid-template-columns: 220px 220px 220px;
+      grid-template-columns: 220px 220px 220px 220px;
       gap: 12px;
       margin-bottom: 14px;
       align-items: end;
@@ -1106,6 +1106,14 @@
                   <option value="asc">等級由低到高</option>
                 </select>
               </div>
+              <div>
+                <label for="assignFilter">編列狀態</label>
+                <select id="assignFilter">
+                  <option value="all" selected>全部人物</option>
+                  <option value="unassigned">未編列</option>
+                  <option value="assigned">已編列</option>
+                </select>
+              </div>
               <div class="special-filter-wrap">
                 <label>特殊條件篩選</label>
                 <button type="button" class="btn-outline special-filter-btn" id="specialFilterBtn">特殊條件篩選</button>
@@ -1347,6 +1355,7 @@
       unsubscribe: null,
       jobFilter: "全部",
       sortMode: "desc",
+      assignFilter: "all",
       selectedSpecialTags: [],
       importRows: [],
       importRawTexts: [],
@@ -1382,6 +1391,7 @@
 
       jobFilter: document.getElementById("jobFilter"),
       sortMode: document.getElementById("sortMode"),
+      assignFilter: document.getElementById("assignFilter"),
       specialTagsEditor: document.getElementById("specialTagsEditor"),
       specialFilterBtn: document.getElementById("specialFilterBtn"),
       specialFilterDropdown: document.getElementById("specialFilterDropdown"),
@@ -1604,6 +1614,10 @@
       });
       els.sortMode.addEventListener("change", () => {
         state.sortMode = els.sortMode.value;
+        renderPlayers();
+      });
+      els.assignFilter.addEventListener("change", () => {
+        state.assignFilter = els.assignFilter.value;
         renderPlayers();
       });
       els.specialFilterBtn.addEventListener("click", (e) => {
@@ -2341,11 +2355,16 @@
       els.playerList.innerHTML = "";
 
       let players = state.data.players.filter(player => {
+        const assigned = getAssignedTeam(player.id);
         const jobOk = state.jobFilter === "全部" || normalizeJob(player.job) === state.jobFilter;
+        const assignOk =
+          state.assignFilter === "all" ||
+          (state.assignFilter === "assigned" && !!assigned) ||
+          (state.assignFilter === "unassigned" && !assigned);
         const tagOk =
           state.selectedSpecialTags.length === 0 ||
           (player.specialTags || []).some(tag => state.selectedSpecialTags.includes(tag));
-        return jobOk && tagOk;
+        return jobOk && assignOk && tagOk;
       });
 
       players = sortPlayers(players);
